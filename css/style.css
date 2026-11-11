@@ -850,6 +850,19 @@ tbody tr:last-child td { border-bottom: 0; }
 .diagrama .estado.ativo .id { fill: #1c1403; }
 .diagrama .estado.ativo .nome { fill: var(--tinta); font-weight: 800; }
 
+/* Captura do JFLAP: largura responsiva; o clique abre em tamanho real. */
+.figura-jflap { margin: 18px 0 0; }
+.figura-jflap a { display: block; width: fit-content; max-width: 100%; margin: 0 auto; cursor: zoom-in; border-radius: 8px; }
+.figura-jflap img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  background: #fff;
+}
+.figura-jflap figcaption { margin-top: 8px; text-align: center; font-size: 13px; color: var(--tinta-2); }
+
 .baixar {
   display: flex;
   gap: 12px 16px;
