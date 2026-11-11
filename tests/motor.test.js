@@ -12,7 +12,7 @@ const PDA = require('../js/pda.js');
 const CASOS = require('./casos.js');
 
 // Trace esperado dos 4 exemplos: [estado, lido, pilha] depois de cada passo.
-// É o que está no README e no plano; 'λ' marca o movimento vazio.
+// É o que está no README; 'λ' marca o movimento vazio.
 const TRACES = {
   '*sabc': [
     ['q1', '*', 'EZ'], ['q2', 's', 'EZ'], ['q2', 'a', 'KEZ'], ['q4', 'b', 'EZ'],

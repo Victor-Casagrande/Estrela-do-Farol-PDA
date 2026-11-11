@@ -6,12 +6,12 @@
   --cartao-2: #f1ebdd;
   --tinta: #1c2333;
   --tinta-2: #535d72;
-  --tinta-3: #838b9c;
+  --tinta-3: #5f6779;   /* >= 4,5:1 sobre --cartao, --cartao-2 e --fundo */
   --linha: #d8cfbb;
   --ambar: #c9861a;
   --ambar-forte: #9a6208;
   --ambar-fundo: #f9e8c2;
-  --ok: #1c7a52;
+  --ok: #1a724c;        /* >= 4,5:1 também sobre --ok-fundo e --cartao-2 */
   --ok-fundo: #dbf0e4;
   --nao: #b3392e;
   --nao-fundo: #f7dfdb;
@@ -521,6 +521,8 @@ kbd {
   background: var(--cartao-2);
   color: var(--tinta);
 }
+
+#roteiro::placeholder { color: var(--tinta-3); opacity: 1; }
 
 .roteiro-botoes { display: flex; gap: 8px; flex-wrap: wrap; }
 
