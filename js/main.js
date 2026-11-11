@@ -30,6 +30,7 @@
   const btnEncerrar = document.getElementById('btn-encerrar');
   const btnEnviar = document.getElementById('btn-enviar');
   const btnPasso = document.getElementById('btn-passo');
+  const seloModo = document.getElementById('selo-modo');
 
   let execucao = 0;       // muda a cada reinício; cancela animações em curso
   let ocupado = false;    // tocando atos: teclado travado
@@ -105,6 +106,8 @@
     // Roteiro terminado: "Passo a passo" só volta com Reiniciar ou ao editar
     // a cadeia, para um clique a mais não apagar o resultado.
     btnPasso.disabled = emRoteiro && Boolean(fim);
+    // O selo Modo Jogo / Modo Estrito só vale para o WASD: no roteiro some.
+    seloModo.hidden = emRoteiro;
   }
 
   function mostrarFim() {
@@ -113,11 +116,13 @@
     ui.fita(fita);
     ui.resultado(jogo.resultado);
     ui.regiaoAtiva(jogo.maquina.estado);
+    const aceita = jogo.resultado.aceita;
+    const noRoteiro = origem === 'roteiro';
     ui.aviso(
-      jogo.resultado.aceita
-        ? 'Percurso encerrado: ACEITA. Reinicie para jogar de novo.'
-        : 'Percurso encerrado: REJEITADA. Reinicie para tentar outra vez.',
-      jogo.resultado.aceita ? 'bom' : 'alerta'
+      (noRoteiro ? 'Roteiro' : 'Percurso') + ' encerrado: ' + (aceita ? 'ACEITA' : 'REJEITADA') + '. ' +
+        (noRoteiro ? 'Edite a cadeia ou clique em Reiniciar para rodar outra.'
+          : aceita ? 'Reinicie para jogar de novo.' : 'Reinicie para tentar outra vez.'),
+      aceita ? 'bom' : 'alerta'
     );
     atualizarContexto();
   }
@@ -220,7 +225,11 @@
   async function mover(dx, dy, repeticao) {
     if (ocupado) { return; }
     if (jogo.resultado) {
-      if (!repeticao) { ui.aviso('O percurso já foi encerrado. Clique em Reiniciar para jogar de novo.', 'alerta'); }
+      if (!repeticao) {
+        ui.aviso(origem === 'roteiro'
+          ? 'O roteiro já foi encerrado. Clique em Reiniciar para voltar ao WASD.'
+          : 'O percurso já foi encerrado. Clique em Reiniciar para jogar de novo.', 'alerta');
+      }
       return;
     }
     if (origem === 'roteiro') {
@@ -333,7 +342,8 @@
     roteiro = { simbolos: simbolos, pos: 0, texto: simbolos.join(''), automatico: false };
     fita = { simbolos: simbolos.slice(), lidos: 0, atual: -1, erro: -1, aberta: false, encerrada: false };
     ui.fita(fita);
-    ui.aviso('Roteiro "' + roteiro.texto + '": ' + simbolos.length + ' símbolo(s). No roteiro não há bloqueio: símbolo sem transição rejeita.');
+    ui.aviso('Roteiro "' + roteiro.texto + '": ' + (simbolos.length === 1 ? '1 símbolo' : simbolos.length + ' símbolos') +
+      '. No roteiro não há bloqueio: símbolo sem transição rejeita.');
     atualizarContexto();
     mostrarMapa();
   }

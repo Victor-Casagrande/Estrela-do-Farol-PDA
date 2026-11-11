@@ -344,13 +344,15 @@
 
       const total = f.simbolos.length;
       const naoLidos = total - f.lidos;
+      const deTotal = 'Lidos: ' + f.lidos + ' de ' + total + (total === 1 ? ' símbolo' : ' símbolos');
       let legenda;
       if (f.aberta) {
-        legenda = 'Percurso em WASD: a fita é escrita em tempo real. ' + f.lidos + ' símbolo(s) lido(s).';
+        legenda = 'Percurso em WASD: a fita é escrita em tempo real. ' +
+          (f.lidos === 1 ? '1 símbolo lido.' : f.lidos + ' símbolos lidos.');
       } else if (f.encerrada && naoLidos > 0) {
-        legenda = f.lidos + ' de ' + total + ' símbolo(s) lido(s); ' + naoLidos + ' ficaram sem ler.';
+        legenda = deTotal + '; ' + (naoLidos === 1 ? '1 ficou sem ler.' : naoLidos + ' ficaram sem ler.');
       } else {
-        legenda = f.lidos + ' de ' + total + ' símbolo(s) lido(s).';
+        legenda = deTotal + '.';
       }
       $('fita-legenda').textContent = legenda;
     };
@@ -634,7 +636,7 @@
       item('Q', conjunto(M.estados.map(function (e) { return e.id; })), M.estados.length + ' estados, um por região do mapa');
       item('Σ', conjunto(M.sigma.map(function (s) { return s.simbolo; })), 'eventos do jogo');
       item('Γ', conjunto(M.gama.map(function (g) { return g.simbolo; })), 'o que pode estar na mochila');
-      item('δ', M.delta.length + ' transições', 'na tabela ao lado');
+      item('δ', M.delta.length + ' transições', 'na tabela de transições desta seção');
       item('q0', M.inicial, 'estado inicial');
       item('Z', M.simboloInicial, 'símbolo inicial da pilha');
       item('F', conjunto(M.finais), 'aceitação por estado final');

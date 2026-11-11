@@ -5,9 +5,19 @@ JavaScript puros, em que **todo evento é um símbolo de entrada consumido por u
 determinístico (PDA)**. O jogo só executa uma ação se existir uma transição
 δ(estado atual, símbolo, topo da pilha).
 
+| | |
+|---|---|
+| **Autor** | Victor Casagrande |
+| **Curso** | Ciência da Computação — IFC Campus Videira |
+| **Disciplina** | Linguagens Formais e Autômatos — Prof. Wanderson Rigo |
+| **Entrega** | Trabalho 02 — 2026 |
+
 **Jogar:** https://victor-casagrande.github.io/Estrela-do-Farol-PDA/
 
 Arquivo do JFLAP: [`pda.jff`](pda.jff) (gerado a partir da mesma δ que o jogo usa).
+
+> **Notação.** λ (notação do JFLAP 7.1) = ε nos slides: os dois símbolos representam o vazio. Este
+> trabalho usa λ, como o JFLAP mostra por padrão.
 
 ---
 
@@ -99,7 +109,7 @@ depende da ordem em que os itens foram empilhados.
 | `c` | entrar em um portal | desempilha E | exige a estrela no topo e a consome |
 
 `s` e `b` são operações diferentes: `b` gasta o item, `s` apenas confere o topo. É a mesma ideia
-da transição `b, B; B` do diagrama de exemplo do enunciado.
+do exercício 0c da Aula 30 (LFA-30), em que a transição `a, B; B` troca o topo B por ele mesmo.
 
 ### Γ: o que há na mochila
 
@@ -111,8 +121,8 @@ da transição `b, B; B` do diagrama de exemplo do enunciado.
 
 ### Tabela de transições δ
 
-Notação do JFLAP: `lido, topo; empilha`, com λ para vazio. Em "empilha", o primeiro símbolo fica
-no topo.
+Notação do JFLAP: `lido, topo; empilha`, com λ para vazio (λ no JFLAP 7.1 = ε nos slides). Em
+"empilha", o primeiro símbolo fica no topo.
 
 | # | De | Lido | Topo | Para | Empilha | JFLAP | No enredo |
 |---|---|---|---|---|---|---|---|
@@ -148,18 +158,24 @@ consequência, a transição λ é aplicada **assim que fica habilitada** (não 
 ### Aceitação
 
 Por estado final: a entrada é aceita se, ao terminar, o estado atual pertence a F. Seguindo o
-padrão do enunciado, a entrada em qf é `λ, Z; λ`, então aceitar também deixa a pilha vazia.
+padrão do exercício 0e da Aula 30 (LFA-30), em que se chega ao estado final por `ε, Z; ε`, a
+entrada em qf é `λ, Z; λ`, então aceitar também deixa a pilha vazia.
 
 ### Linguagem reconhecida
 
 ```
-L(M) = { aⁿ * x c bⁿ  |  n ≥ 0,  x ∈ {sab} ∪ { aᵐ bᵐ s | m ≥ 1 } }
+L(M) = { aⁿ * s a b c bⁿ      |  n ≥ 0 }            (rota da Gruta)
+     ∪ { aⁿ * aᵐ bᵐ s c bⁿ   |  n ≥ 0,  m ≥ 1 }    (rota da Ponte)
 ```
+
+Nestas fórmulas o `*` é **sempre o símbolo de Σ** (coletar a estrela), nunca o fecho de Kleene.
+Toda repetição está escrita com expoente: `aⁿ` é `a` repetido n vezes.
 
 - `aⁿ` são as chaves colhidas **antes** da estrela. Ficam por baixo dela e só voltam a ser
   alcançáveis depois do portal: são os `bⁿ` da urna.
-- `x` é o caminho da Colina ao Pátio. Pela Gruta, `sab`. Pela Ponte, `aᵐ bᵐ s`: as `m` chaves
-  colhidas depois da estrela têm de ser todas gastas (portão + guardião) antes de a ponte baixar.
+- Entre a estrela e o portal `c` está o caminho da Colina ao Pátio. Pela Gruta, `s a b`. Pela
+  Ponte, `aᵐ bᵐ s`: as `m` chaves colhidas depois da estrela têm de ser todas gastas (portão +
+  guardião) antes de a ponte baixar.
 
 ### Por que um autômato finito não resolveria
 
@@ -173,11 +189,26 @@ Onde a pilha limita o jogo:
 - **Quantidade global.** O número de chaves usadas tem de ser igual ao de colhidas, senão a pilha
   não volta a Z e a λ para qf nunca dispara.
 
-L(M) não é regular. Se fosse, L(M) ∩ `a* * s a b c b*` também seria, pois linguagens regulares são
-fechadas por interseção. Mas essa interseção é { aⁿ `*sabc` bⁿ | n ≥ 0 }, que não é regular: pelo
-lema do bombeamento, com w = aᵖ `*sabc` bᵖ, a parte bombeada cai dentro dos `a` iniciais, e
-repeti-la muda o número de `a` sem mudar o de `b`. Um autômato finito não tem como lembrar quantas
-chaves foram colhidas; a pilha tem.
+**L(M) não é regular.** A prova é por contradição, com o lema do bombeamento. Como acima, o `*` é
+o símbolo de Σ e toda repetição é um expoente.
+
+1. Suponha que L(M) seja regular.
+2. Seja R = { aⁱ * s a b c bʲ | i ≥ 0, j ≥ 0 }. R é regular: um autômato finito lê os `a`, depois
+   a sequência fixa `* s a b c`, depois os `b`, sem precisar contar nada.
+3. Linguagens regulares são fechadas por interseção, então L' = L(M) ∩ R seria regular. As cadeias
+   da rota da Ponte têm um `a` logo depois da estrela e ficam fora de R; da rota da Gruta sobram as
+   que têm i = j. Logo L' = { aⁿ * s a b c bⁿ | n ≥ 0 }.
+4. Seja p ≥ 1 a constante do lema do bombeamento para L'. Tome w = aᵖ * s a b c bᵖ. Então w ∈ L' e
+   |w| = 2p + 5 ≥ p.
+5. O lema garante uma divisão w = xyz com |xy| ≤ p e |y| ≥ 1 tal que x yⁱ z ∈ L' para todo i ≥ 0.
+   Como |xy| ≤ p, x e y ficam inteiros dentro dos p primeiros símbolos, que são todos `a`:
+   x = aʳ, y = aᵏ, z = aᵖ⁻ʳ⁻ᵏ * s a b c bᵖ, com k ≥ 1 e r + k ≤ p.
+6. Bombeando com i = 2: x y² z = aᵖ⁺ᵏ * s a b c bᵖ. Essa cadeia tem p + k letras `a` antes da
+   estrela e p letras `b` no fim, e p + k ≠ p porque k ≥ 1. Portanto x y² z ∉ L'.
+7. Isso contradiz o lema. Logo L' não é regular e, pelo passo 3, L(M) também não é.
+
+Em termos do jogo: um autômato finito não tem como lembrar quantas chaves foram colhidas antes da
+estrela para cobrar o mesmo número na urna; a pilha tem.
 
 ---
 
@@ -276,8 +307,11 @@ página normalmente.
   transição para (estado, símbolo, topo), a personagem é bloqueada, **nada é anexado à fita** e
   aparece a transição indefinida com o motivo, por exemplo: "δ(q1, b, E) indefinida: em q1, "b"
   exige K (chave) no topo da pilha, mas o topo é E (estrela)".
-- **Eventos irreversíveis (`*`, `a`, `c`).** O símbolo sempre entra na fita. Sem transição, a
-  entrada é REJEITADA na hora.
+- **Eventos irreversíveis (`*`, `a`, `c`).** O símbolo sempre entra na fita, sem consulta prévia.
+  Na prática só o `c` pode ficar sem transição onde existe um tile: no Pátio com uma chave sobre a
+  estrela, tocar o portal REJEITA a entrada na hora. A estrela (`*`) só existe na Clareira e as
+  árvores (`a`) só existem na Clareira, na Colina e na Gruta, e nesses estados δ está definida
+  para qualquer topo possível; por isso tocar neles nunca rejeita.
 - **Encerrar percurso.** Sinaliza o fim da entrada: aceita se o estado atual ∈ F, senão REJEITADA.
   Chegar a qf encerra sozinho, porque não há mais nenhum evento na Lanterna e a fita não teria
   como crescer. O botão é só do modo WASD: durante um roteiro ele fica desabilitado, porque a
@@ -288,7 +322,10 @@ página normalmente.
   para reexecutá-la passo a passo.
 - **Beco sem saída.** Se nenhum símbolo de Σ tem transição para (estado, topo), não há λ
   habilitada e o estado não é final, a página avisa e explica o porquê. O único caso alcançável é
-  o Pátio com uma chave sobre a estrela.
+  o Pátio com uma chave sobre a estrela. O aviso cobre apenas esse **travamento imediato**: ele não
+  prevê derrotas futuras. Na Gruta com duas ou mais chaves sobre a estrela ainda há jogadas
+  (colher outra chave, abrir a porta), então o aviso não aparece, embora a partida já esteja
+  perdida; ele só surge depois da porta, quando o Pátio trava.
 
 ### Região = estado
 
@@ -326,8 +363,16 @@ esquerda) e o resultado.
 
 ## 5. Arquivos
 
-A δ existe em **um único lugar**, `js/automato.js`. Motor, jogo, diagrama, tabela, gerador do
-`.jff` e testes leem essa mesma estrutura.
+A tabela δ está escrita em **um único arquivo**, `js/automato.js`. O motor, o diagrama e a tabela
+da página, o gerador do `.jff` e os testes leem essa mesma estrutura; nenhum deles guarda cópia da
+δ.
+
+O mapa é outra coisa: `js/mapa.js` desenha as regiões e diz de que lado de cada porta fica cada
+uma, então a geometria repete, do seu jeito, qual estado leva a qual. Essa parte não é derivada da
+δ: ela é **validada contra a δ** por `tests/mapa.test.js` (cada par estado/símbolo tem um tile, e
+cada travessia sai na região do estado de destino). Mudar a δ sem ajustar o mapa faz esses testes
+falharem. Os textos de enredo (descrições de estados, de símbolos e dos exemplos) também são
+escritos à mão.
 
 | Arquivo | Conteúdo |
 |---|---|

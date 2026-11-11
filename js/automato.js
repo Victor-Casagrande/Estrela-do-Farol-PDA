@@ -1,9 +1,11 @@
 /*
  * automato.js — definição formal de M = (Q, Σ, Γ, δ, q0, Z, F).
  *
- * FONTE ÚNICA DA VERDADE. O motor (pda.js), o jogo (game.js), o diagrama e a
+ * A δ ESTÁ ESCRITA SÓ AQUI. O motor (pda.js), o jogo (game.js), o diagrama e a
  * tabela da interface (ui.js), o gerador do .jff (tools/gerar-jff.js) e os
  * testes leem esta mesma estrutura. Nenhum deles guarda cópia da δ.
+ * A geometria do mapa (mapa.js) não é derivada daqui: ela é validada contra a
+ * δ por tests/mapa.test.js.
  *
  * A cadeia vazia '' representa λ (em "le", "topo" e "empilha").
  * Em "empilha", o primeiro caractere fica no topo, como no JFLAP.
@@ -122,8 +124,8 @@
       descricao: 'Contagem aninhada: 1 chave antes da estrela (vai para a urna no fim) e 2 depois (portão e guardião).'
     },
     {
-      cadeia: '*asbac', aceita: false, titulo: 'Ordem errada',
-      descricao: 'A chave colhida depois da estrela a encobre, e a passagem exige a estrela no topo.'
+      cadeia: '*asbac', aceita: false, titulo: 'Cadeia do enunciado: ordem errada',
+      descricao: 'É a cadeia de exemplo do enunciado. Aqui ela é rejeitada: a chave colhida depois da estrela a encobre, e a passagem exige a estrela no topo.'
     },
     {
       cadeia: 'a*sabc', aceita: false, titulo: 'Sobrou uma chave',
