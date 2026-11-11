@@ -259,9 +259,13 @@ corrigida `a*sabcb` é aceita.
 
 ### Modo WASD (híbrido)
 
-Anda-se com `W` `A` `S` `D` ou com as setas. **Andar em chão livre não gera símbolo.** Os tiles de
-evento (árvore, estrela, passagem, ponte, portão, guardião, urna, portal) são sólidos: para
-interagir, encoste e aperte a tecla na direção do tile.
+Anda-se com `W` `A` `S` `D`. **Andar em chão livre não gera símbolo.** Os tiles de evento (árvore,
+estrela, passagem, ponte, portão, guardião, urna, portal) são sólidos: para interagir, encoste e
+aperte a tecla na direção do tile.
+
+As setas também movem, mas só quando o foco está no mapa (ele recebe o foco ao abrir a página e ao
+ser clicado) e há um percurso em WASD em curso. Fora disso as setas são do navegador e rolam a
+página normalmente.
 
 - **Um toque, um símbolo.** Cada pressionamento gera no máximo um símbolo. Segurar a tecla
   continua a caminhada, mas nunca dispara evento: para colher a segunda chave é preciso soltar e
@@ -276,7 +280,8 @@ interagir, encoste e aperte a tecla na direção do tile.
   entrada é REJEITADA na hora.
 - **Encerrar percurso.** Sinaliza o fim da entrada: aceita se o estado atual ∈ F, senão REJEITADA.
   Chegar a qf encerra sozinho, porque não há mais nenhum evento na Lanterna e a fita não teria
-  como crescer.
+  como crescer. O botão é só do modo WASD: durante um roteiro ele fica desabilitado, porque a
+  cadeia do roteiro já tem fim definido e encerrá-la antes daria o veredito de um prefixo.
 - **Modo Jogo / Modo Estrito.** No Modo Estrito, *qualquer* toque sem transição, inclusive em
   obstáculo, entra na fita e rejeita, como num PDA puro. O modo ativo fica sempre visível.
 - **Enviar percurso para o roteiro.** Copia a sequência gerada em WASD para o campo do roteiro,
@@ -297,8 +302,13 @@ Ao fim de cada passo, a região onde Lia está é o estado atual do autômato. P
 
 Um campo de texto recebe a cadeia (ex.: `*sabc`). **Executar** roda animado, cerca de 600 ms por
 símbolo; **Passo a passo** processa um símbolo por clique; **Reiniciar** volta à configuração
-inicial. No roteiro não há bloqueio: símbolo sem transição rejeita, e símbolo fora de Σ rejeita com
-aviso. A cada símbolo a personagem vai até o tile do evento correspondente. Espaços são ignorados.
+inicial. Depois de ACEITA ou REJEITADA, o **Passo a passo** fica desabilitado até Reiniciar ou
+editar a cadeia, para um clique a mais não apagar o resultado.
+
+No roteiro não há bloqueio: símbolo sem transição rejeita, e símbolo fora de Σ rejeita com aviso.
+Dois enganos comuns ganham uma dica junto da rejeição: maiúscula de um símbolo válido ("Você quis
+dizer "s"?") e `λ` ou `ε` digitados ("λ é o movimento vazio, não um símbolo de entrada"). A cada
+símbolo a personagem vai até o tile do evento correspondente. Espaços são ignorados.
 
 ### O que a página mostra em tempo real
 
@@ -364,7 +374,12 @@ Os testes conferem que:
 4. o mapa concorda com a δ: cada par (estado, símbolo) tem um tile, e cada travessia leva à região
    do estado de destino, incluindo a escada da λ;
 5. em partidas simuladas, a região da personagem é sempre o estado do autômato, tecla segurada não
-   repete evento, o Modo Jogo bloqueia e o Modo Estrito rejeita.
+   repete evento, o Modo Jogo bloqueia e o Modo Estrito rejeita;
+6. os fluxos de `js/main.js` se comportam como descrito acima (`tests/main.test.js`): "Encerrar
+   percurso" é ignorado durante um roteiro, "Passo a passo" trava depois do resultado, as setas só
+   são do jogo com o foco no mapa, o texto "em andamento" acompanha cada passo e uma falha na
+   animação não trava o teclado. O `main.js` roda sem alteração dentro de um contexto `vm`, com um
+   DOM mínimo e um relógio virtual.
 
 ---
 

@@ -205,18 +205,20 @@
       $('estado-desc').textContent = e.descricao;
     };
 
-    // Símbolo em processamento. null = nenhum.
+    // Símbolo em processamento. null = nenhum. Sempre limpa a transição
+    // exibida: a do símbolo anterior não vale para este, e a nova só aparece
+    // quando ui.transicao() for chamada.
     ui.processando = function (simbolo) {
       const caixa = $('simbolo-atual');
+      $('transicao-atual').textContent = '';
+      $('transicao-atual').classList.remove('erro');
       if (simbolo === null || simbolo === undefined) {
         caixa.textContent = '—';
         caixa.classList.remove('ativo');
         $('simbolo-nome').textContent = 'nenhum símbolo lido ainda';
-        $('transicao-atual').textContent = '';
-        $('transicao-atual').classList.remove('erro');
         return;
       }
-      caixa.textContent = PDA.mostrar(simbolo);
+      caixa.textContent = PDA.mostrarLido(simbolo);
       caixa.classList.add('ativo');
       if (simbolo === '') {
         $('simbolo-nome').textContent = 'movimento vazio: nada é lido da fita';
@@ -260,7 +262,13 @@
       const cont = $('pilha');
       const antiga = pilhaAtual === null || opcoes.imediato ? null : pilhaAtual;
       pilhaAtual = nova;
-      $('pilha-texto').textContent = nova === '' ? 'λ (vazia)' : nova;
+      // Linha de resumo: a pilha inteira está no desenho acima (com rolagem);
+      // aqui uma pilha longa é abreviada para não empurrar o resto do painel.
+      const LIMITE_RESUMO = 16;
+      $('pilha-texto').textContent = nova === '' ? 'λ (vazia)'
+        : nova.length > LIMITE_RESUMO ? nova.slice(0, LIMITE_RESUMO) + '… (' + nova.length + ' símbolos)'
+        : nova;
+      $('pilha-texto').setAttribute('title', nova === '' ? 'pilha vazia' : nova);
 
       let comum = 0;
       if (antiga !== null) {
@@ -294,6 +302,10 @@
       if (nova === '') {
         cont.appendChild(el('p', { classe: 'pilha-vazia', texto: 'vazia' }));
       }
+
+      // A pilha tem altura máxima e rolagem interna; o topo é o primeiro
+      // filho, então voltar a rolagem para o início o mantém sempre à vista.
+      cont.scrollTop = 0;
 
       if (fantasmas.length) {
         limpezaPilha = setTimeout(function () {
@@ -370,7 +382,7 @@
       linhaHistorico([
         String(r.passo),
         r.estado,
-        PDA.mostrar(r.lido),
+        PDA.mostrarLido(r.lido),
         r.topoAntes === '' ? '—' : r.topoAntes,
         r.pilha === '' ? 'λ' : r.pilha,
         r.ok ? PDA.formal(r.transicao) : PDA.indefinida(r.estadoAntes, r.lido, r.topoAntes) + ' ✗'

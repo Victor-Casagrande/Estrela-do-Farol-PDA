@@ -42,8 +42,29 @@
       t.para + ', ' + mostrar(t.empilha) + ')';
   }
 
+  // Símbolo vindo da fita. Um "λ" digitado é um caractere como outro qualquer
+  // (e fora de Σ): vai entre aspas para não se confundir com o movimento
+  // vazio, que internamente é a cadeia ''.
+  function mostrarLido(s) {
+    return s === LAMBDA ? '"' + LAMBDA + '"' : mostrar(s);
+  }
+
   function indefinida(estado, simbolo, topo) {
-    return 'δ(' + estado + ', ' + mostrar(simbolo) + ', ' + (topo === '' ? 'pilha vazia' : topo) + ') indefinida';
+    return 'δ(' + estado + ', ' + mostrarLido(simbolo) + ', ' + (topo === '' ? 'pilha vazia' : topo) + ') indefinida';
+  }
+
+  // Dica para os enganos mais comuns com símbolo fora de Σ. A cadeia continua
+  // rejeitada; a dica só diz o que provavelmente se quis digitar.
+  function dicaForaDeSigma(alfabeto, simbolo) {
+    if (simbolo === LAMBDA || simbolo === 'ε') {
+      return ' ' + (simbolo === 'ε' ? 'ε é o λ do JFLAP: ' : '') + LAMBDA +
+        ' é o movimento vazio, não um símbolo de entrada. Para testar a cadeia vazia, deixe a entrada em branco.';
+    }
+    const minuscula = simbolo.toLowerCase();
+    if (minuscula !== simbolo && alfabeto.indexOf(minuscula) !== -1) {
+      return ' Você quis dizer "' + minuscula + '"? Os símbolos de Σ são minúsculos.';
+    }
+    return '';
   }
 
   function nomeDe(lista, chave, valor) {
@@ -142,7 +163,8 @@
     const alfabeto = (M.sigma || []).map(function (s) { return s.simbolo; });
 
     if (simbolo !== '' && alfabeto.indexOf(simbolo) === -1) {
-      return base + ': o símbolo "' + simbolo + '" não pertence a Σ = ' + conjunto(alfabeto) + '.';
+      return base + ': o símbolo "' + simbolo + '" não pertence a Σ = ' + conjunto(alfabeto) + '.' +
+        dicaForaDeSigma(alfabeto, simbolo);
     }
 
     const mesmas = M.delta.filter(function (t) { return t.de === estado && t.le === simbolo; });
@@ -387,6 +409,7 @@
   return {
     LAMBDA: LAMBDA,
     mostrar: mostrar,
+    mostrarLido: mostrarLido,
     rotulo: rotulo,
     formal: formal,
     indefinida: indefinida,

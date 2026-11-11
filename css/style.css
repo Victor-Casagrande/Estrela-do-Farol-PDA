@@ -624,22 +624,32 @@ kbd {
 
 .bloco-pilha { display: flex; flex-direction: column; }
 
+/* Altura máxima com rolagem interna: uma pilha alta não empurra a fita, o
+   resultado e o histórico para fora da tela. O topo é o primeiro filho e a
+   rolagem volta ao início a cada passo (ui.pilha), então ele fica à vista. */
 .pilha {
   flex: 1;
   min-height: 188px;
+  max-height: 330px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   gap: 4px;
   padding: 8px 7px 7px;
   border: 2px solid var(--tinta-3);
   border-top: 0;
   border-radius: 0 0 16px 16px;
   background: var(--cartao-2);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
+/* Pilha curta fica assentada no fundo. Margem automática em vez de
+   justify-content: flex-end, que deixaria o topo inalcançável pela rolagem. */
+.pilha > :first-child { margin-top: auto; }
+
 .celula {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 6px;

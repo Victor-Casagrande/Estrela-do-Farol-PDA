@@ -152,6 +152,33 @@ test('símbolo fora de Σ rejeita com aviso', function () {
   assert.match(r.motivo, /"x" não pertence a Σ/);
 });
 
+test('maiúscula de um símbolo válido continua rejeitada, mas com a dica da minúscula', function () {
+  const r = PDA.executar(M, '*SABC');
+  assert.equal(r.aceita, false);
+  assert.equal(r.tipo, 'fora-de-sigma');
+  assert.equal(r.consumidos, '*S');
+  assert.match(r.motivo, /"S" não pertence a Σ/);
+  assert.match(r.motivo, /Você quis dizer "s"\?/);
+  // Um símbolo qualquer fora de Σ não ganha dica nenhuma.
+  assert.doesNotMatch(PDA.executar(M, '*X').motivo, /Você quis dizer/);
+  assert.doesNotMatch(PDA.executar(M, 'x').motivo, /Você quis dizer|movimento vazio/);
+});
+
+test('λ ou ε digitados são rejeitados com a explicação de que λ não é símbolo de entrada', function () {
+  ['λ', 'ε'].forEach(function (vazio) {
+    const r = PDA.executar(M, vazio);
+    assert.equal(r.aceita, false, vazio);
+    assert.equal(r.tipo, 'fora-de-sigma', vazio);
+    assert.match(r.motivo, /λ é o movimento vazio, não um símbolo de entrada/, vazio);
+  });
+  // O λ digitado aparece entre aspas; o movimento vazio de verdade, sem.
+  assert.match(PDA.executar(M, 'λ').motivo, /^δ\(q0, "λ", Z\) indefinida/);
+  assert.equal(PDA.indefinida('q5', '', 'K'), 'δ(q5, λ, K) indefinida');
+  assert.equal(PDA.mostrarLido(''), 'λ');
+  assert.equal(PDA.mostrarLido('λ'), '"λ"');
+  assert.equal(PDA.mostrarLido('a'), 'a');
+});
+
 test('falta de chave: o motivo vem da própria δ', function () {
   const r = PDA.executar(M, '*b');
   assert.match(r.motivo, /δ\(q1, b, E\) indefinida/);
