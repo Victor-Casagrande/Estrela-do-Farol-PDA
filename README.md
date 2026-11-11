@@ -119,6 +119,14 @@ do exercício 0c da Aula 30 (LFA-30), em que a transição `a, B; B` troca o top
 | K | uma chave colhida e ainda não usada |
 | E | a estrela |
 
+### Diagrama de estados
+
+[![Diagrama do autômato no JFLAP 7.1 (pda.jff): sete estados, com q0 inicial e qf final, e as 16 transições da tabela abaixo](img/jflap-diagrama.png)](img/jflap-diagrama.png)
+
+*Diagrama do autômato no JFLAP 7.1 (`pda.jff`).* Clique na imagem para abri-la em tamanho real. A
+página mostra o mesmo autômato desenhado a partir da δ, com o estado atual e a última transição
+destacados em tempo real, e logo abaixo esta captura do JFLAP.
+
 ### Tabela de transições δ
 
 Notação do JFLAP: `lido, topo; empilha`, com λ para vazio (λ no JFLAP 7.1 = ε nos slides). Em
@@ -387,6 +395,7 @@ escritos à mão.
 | `tools/gerar-jff.js` | gera `pda.jff` a partir de `js/automato.js` |
 | `tools/conferir-jflap.js` | opcional: confere o `pda.jff` dentro do próprio JFLAP |
 | `pda.jff` | o autômato no formato do JFLAP 7.1 (gerado, não editar) |
+| `img/jflap-diagrama.png` | captura do `pda.jff` aberto no JFLAP 7.1 |
 | `tests/` | testes em Node, sem dependências |
 
 Não há dependências externas nem etapa de build.

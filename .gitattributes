@@ -2,3 +2,5 @@
 # com a saída do gerador.
 * text=auto eol=lf
 *.jff text eol=lf
+# Imagens nunca passam por conversão de fim de linha.
+*.png binary
