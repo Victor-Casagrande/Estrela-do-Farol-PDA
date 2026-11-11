@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--A Estrela do Farol: automato de pilha deterministico. Gerado por tools/gerar-jff.js a partir de js/automato.js; nao edite a mao.-->
+<structure>
+	<type>pda</type>
+	<automaton>
+		<!--The list of states.-->
+		<state id="0" name="q0">
+			<x>80.0</x>
+			<y>440.0</y>
+			<label>Clareira</label>
+			<initial/>
+		</state>
+		<state id="1" name="q1">
+			<x>240.0</x>
+			<y>290.0</y>
+			<label>Colina da Estrela</label>
+		</state>
+		<state id="2" name="q2">
+			<x>400.0</x>
+			<y>140.0</y>
+			<label>Gruta de Cristal</label>
+		</state>
+		<state id="3" name="q3">
+			<x>470.0</x>
+			<y>290.0</y>
+			<label>Ponte do Guardião</label>
+		</state>
+		<state id="4" name="q4">
+			<x>630.0</x>
+			<y>140.0</y>
+			<label>Pátio do Portal</label>
+		</state>
+		<state id="5" name="q5">
+			<x>800.0</x>
+			<y>290.0</y>
+			<label>Farol</label>
+		</state>
+		<state id="6" name="qf">
+			<x>960.0</x>
+			<y>140.0</y>
+			<label>Lanterna acesa</label>
+			<final/>
+		</state>
+		<!--The list of transitions.-->
+		<transition>
+			<from>0</from>
+			<to>0</to>
+			<read>a</read>
+			<pop>Z</pop>
+			<push>KZ</push>
+		</transition>
+		<transition>
+			<from>0</from>
+			<to>0</to>
+			<read>a</read>
+			<pop>K</pop>
+			<push>KK</push>
+		</transition>
+		<transition>
+			<from>0</from>
+			<to>1</to>
+			<read>*</read>
+			<pop>Z</pop>
+			<push>EZ</push>
+		</transition>
+		<transition>
+			<from>0</from>
+			<to>1</to>
+			<read>*</read>
+			<pop>K</pop>
+			<push>EK</push>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>1</to>
+			<read>a</read>
+			<pop>E</pop>
+			<push>KE</push>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>1</to>
+			<read>a</read>
+			<pop>K</pop>
+			<push>KK</push>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>2</to>
+			<read>s</read>
+			<pop>E</pop>
+			<push>E</push>
+		</transition>
+		<transition>
+			<from>1</from>
+			<to>3</to>
+			<read>b</read>
+			<pop>K</pop>
+			<push/>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>2</to>
+			<read>a</read>
+			<pop>E</pop>
+			<push>KE</push>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>2</to>
+			<read>a</read>
+			<pop>K</pop>
+			<push>KK</push>
+		</transition>
+		<transition>
+			<from>2</from>
+			<to>4</to>
+			<read>b</read>
+			<pop>K</pop>
+			<push/>
+		</transition>
+		<transition>
+			<from>3</from>
+			<to>3</to>
+			<read>b</read>
+			<pop>K</pop>
+			<push/>
+		</transition>
+		<transition>
+			<from>3</from>
+			<to>4</to>
+			<read>s</read>
+			<pop>E</pop>
+			<push>E</push>
+		</transition>
+		<transition>
+			<from>4</from>
+			<to>5</to>
+			<read>c</read>
+			<pop>E</pop>
+			<push/>
+		</transition>
+		<transition>
+			<from>5</from>
+			<to>5</to>
+			<read>b</read>
+			<pop>K</pop>
+			<push/>
+		</transition>
+		<transition>
+			<from>5</from>
+			<to>6</to>
+			<read/>
+			<pop>Z</pop>
+			<push/>
+		</transition>
+	</automaton>
+</structure>

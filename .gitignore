@@ -1,0 +1,11 @@
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+.claude/
+
+# Node (o projeto não tem dependências; isto é só precaução)
+node_modules/
+npm-debug.log*

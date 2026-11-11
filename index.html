@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Estrela do Farol — Autômato de Pilha</title>
+<meta name="description" content="Jogo cuja lógica é um autômato de pilha determinístico (PDA). Trabalho 02 de Linguagens Formais e Autômatos.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3.5l3.4 8.2 8.8.7-6.7 5.8 2.1 8.6L16 22.2l-7.6 4.6 2.1-8.6-6.7-5.8 8.8-.7z' fill='%23ffd257' stroke='%23b9770e' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<svg class="sprites" width="0" height="0" aria-hidden="true" focusable="false">
+  <symbol id="i-chave" viewBox="0 0 32 32">
+    <circle cx="10.5" cy="16" r="5.5" fill="none" stroke="#c9861a" stroke-width="3.4"/>
+    <path d="M16 16h12M23 16v5M27.5 16v4" fill="none" stroke="#c9861a" stroke-width="3.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-estrela" viewBox="0 0 32 32">
+    <path d="M16 3.5l3.4 8.2 8.8.7-6.7 5.8 2.1 8.6L16 22.2l-7.6 4.6 2.1-8.6-6.7-5.8 8.8-.7z" fill="#ffd257" stroke="#b9770e" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-fundo" viewBox="0 0 32 32">
+    <path d="M8 7v14a5 5 0 0 0 5 5h6a5 5 0 0 0 5-5V7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-arvore" viewBox="0 0 32 32">
+    <rect x="14" y="19" width="4" height="10" rx="1.2" fill="#7a5230"/>
+    <circle cx="16" cy="11.5" r="8.5" fill="#3d8b4d"/>
+    <circle cx="9" cy="15.5" r="5.5" fill="#4a9f5c"/>
+    <circle cx="23" cy="15.5" r="5.5" fill="#4a9f5c"/>
+    <circle cx="12" cy="10" r="2" fill="#ffd257"/>
+    <circle cx="20.5" cy="13" r="2" fill="#ffd257"/>
+    <circle cx="15" cy="17" r="2" fill="#ffd257"/>
+  </symbol>
+  <symbol id="i-passagem" viewBox="0 0 32 32">
+    <path d="M4 30V15a12 12 0 0 1 24 0v15z" fill="#566079"/>
+    <path d="M8.5 30V15.5a7.5 7.5 0 0 1 15 0V30z" fill="#16203a"/>
+    <path d="M16 13l1.6 3.6 3.9.4-2.9 2.7.8 3.9-3.400-2-3.400 2 .8-3.9-2.900-2.700 3.900-.400z" fill="#7fe3f2"/>
+  </symbol>
+  <symbol id="i-portao" viewBox="0 0 32 32">
+    <rect x="5" y="4" width="22" height="26" rx="2.5" fill="#8a5a33"/>
+    <path d="M12.3 4v26M19.7 4v26" stroke="#6b4425" stroke-width="1.4"/>
+    <rect x="11" y="15" width="10" height="8.5" rx="1.6" fill="#f0b83c"/>
+    <path d="M13 15v-2.2a3 3 0 0 1 6 0V15" fill="none" stroke="#f0b83c" stroke-width="2"/>
+    <circle cx="16" cy="19" r="1.5" fill="#6b4425"/>
+  </symbol>
+  <symbol id="i-ponte" viewBox="0 0 32 32">
+    <rect x="7" y="3" width="18" height="26" rx="1.5" fill="#9a6a3c"/>
+    <path d="M7 9.5h18M7 22.5h18" stroke="#6b4425" stroke-width="1.4"/>
+    <path d="M4 3v26M28 3v26" stroke="#c9d2e6" stroke-width="2" stroke-linecap="round" stroke-dasharray="2.5 2.5"/>
+    <path d="M16 11.200l1.400 3.100 3.400.300-2.500 2.300.700 3.300-3-1.700-3 1.700.700-3.300-2.500-2.300 3.400-.300z" fill="#7fe3f2"/>
+  </symbol>
+  <symbol id="i-guardiao" viewBox="0 0 32 32">
+    <path d="M6 30c0-10 3.5-16 10-16s10 6 10 16z" fill="#4a3d78"/>
+    <path d="M16 3c-5 0-8 3.6-8 8.500 0 2.400 1 4.500 2.400 5.800h11.200c1.400-1.300 2.400-3.400 2.400-5.800C24 6.600 21 3 16 3z" fill="#352b5c"/>
+    <ellipse cx="16" cy="12" rx="4.6" ry="4" fill="#191430"/>
+    <circle cx="14.2" cy="12" r="1.1" fill="#ffd257"/>
+    <circle cx="17.8" cy="12" r="1.1" fill="#ffd257"/>
+    <circle cx="16" cy="23.5" r="2.6" fill="none" stroke="#ffd257" stroke-width="1.5"/>
+  </symbol>
+  <symbol id="i-urna" viewBox="0 0 32 32">
+    <path d="M10 6h12v3.200c3.600 2.600 5.500 6 5.500 9.800 0 5.600-5 10-11.500 10S4.500 24.600 4.500 19c0-3.800 1.900-7.200 5.500-9.800z" fill="#b5651d"/>
+    <rect x="8.5" y="4" width="15" height="3.4" rx="1.4" fill="#8f4d14"/>
+    <rect x="12" y="16.5" width="8" height="2.6" rx="1.3" fill="#3b2109"/>
+  </symbol>
+  <symbol id="i-portal" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="13.5" fill="#4b2f9e"/>
+    <circle cx="16" cy="16" r="9.5" fill="#7c5ae0"/>
+    <circle cx="16" cy="16" r="5.5" fill="#b9a3ff"/>
+    <circle cx="16" cy="16" r="2" fill="#f4eeff"/>
+  </symbol>
+  <symbol id="i-escada" viewBox="0 0 32 32">
+    <path d="M5 28h6v-6h6v-6h6v-6h5" fill="none" stroke="#e9dcc0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-lanterna" viewBox="0 0 32 32">
+    <rect x="13" y="2" width="6" height="3.5" rx="1.2" fill="#3a4257"/>
+    <path d="M10 5h12l2 4H8z" fill="#3a4257"/>
+    <rect x="9.5" y="9" width="13" height="14" rx="1.5" fill="currentColor"/>
+    <path d="M9.5 9v14M16 9v14M22.5 9v14" stroke="#3a4257" stroke-width="1.6"/>
+    <rect x="7" y="23" width="18" height="4.5" rx="1.5" fill="#3a4257"/>
+  </symbol>
+  <symbol id="i-lia" viewBox="0 0 32 32">
+    <rect x="20.5" y="13" width="6" height="14" rx="3" fill="#c9861a" stroke="#7a4f0a" stroke-width="1"/>
+    <path d="M8.5 30c0-7 2.600-11.500 7.500-11.500s7.500 4.500 7.500 11.500z" fill="#d6453d" stroke="#7d201b" stroke-width="1"/>
+    <circle cx="16" cy="12" r="6.2" fill="#f3c9a0" stroke="#8a5a33" stroke-width="1"/>
+    <path d="M9.300 11.500C9.300 7 12.300 4.500 16 4.500s6.700 2.500 6.700 7c-2.200-1.900-4.400-2.700-6.700-2.700s-4.500.800-6.700 2.700z" fill="#2c3550"/>
+    <circle cx="13.8" cy="12.800" r=".9" fill="#1d2433"/>
+    <circle cx="18.2" cy="12.800" r=".9" fill="#1d2433"/>
+  </symbol>
+</svg>
+
+<div class="pagina">
+
+  <header class="cabecalho">
+    <p class="sobretitulo">Linguagens Formais e Autômatos · Trabalho 02 · Autômato de Pilha</p>
+    <div class="topo-grade">
+      <h1>A Estrela do Farol</h1>
+      <p class="lede">
+        A estrela-guia do Farol de Âmbar caiu na colina. Lia precisa levá-la de volta carregando uma
+        <strong>mochila-tubo</strong>, em que só se alcança o último item guardado. Cada evento do mapa é um
+        símbolo de entrada de um autômato de pilha, e nada acontece sem uma transição
+        <span class="mono">δ(estado, símbolo, topo)</span>.
+      </p>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="palco">
+
+      <div class="coluna">
+
+        <section class="cartao cartao-mapa" aria-labelledby="titulo-mapa">
+          <div class="cartao-topo">
+            <h2 id="titulo-mapa">Mapa</h2>
+            <div class="modo" role="group" aria-label="Modo do percurso em WASD">
+              <button type="button" id="modo-jogo" class="ativo" aria-pressed="true">Modo Jogo</button>
+              <button type="button" id="modo-estrito" aria-pressed="false">Modo Estrito</button>
+            </div>
+          </div>
+          <p id="modo-descricao" class="modo-descricao"></p>
+
+          <div id="mapa" class="mapa" aria-label="Mapa do jogo. Use as teclas W, A, S e D para mover a personagem."></div>
+
+          <div id="beco" class="beco" role="alert" hidden></div>
+          <div id="dica" class="dica" aria-live="polite"></div>
+          <p id="aviso" class="aviso" aria-live="polite"></p>
+
+          <div class="acoes">
+            <div class="dpad" aria-label="Controles de movimento">
+              <button type="button" data-dx="0" data-dy="-1" class="dpad-w" aria-label="Mover para cima (W)">W</button>
+              <button type="button" data-dx="-1" data-dy="0" class="dpad-a" aria-label="Mover para a esquerda (A)">A</button>
+              <button type="button" data-dx="0" data-dy="1" class="dpad-s" aria-label="Mover para baixo (S)">S</button>
+              <button type="button" data-dx="1" data-dy="0" class="dpad-d" aria-label="Mover para a direita (D)">D</button>
+            </div>
+            <div class="acoes-botoes">
+              <button type="button" id="btn-encerrar" class="botao principal">Encerrar percurso</button>
+              <button type="button" id="btn-enviar" class="botao">Enviar percurso para o roteiro</button>
+              <button type="button" id="btn-reiniciar" class="botao">Reiniciar</button>
+            </div>
+          </div>
+
+          <details class="como-jogar">
+            <summary>Como jogar</summary>
+            <ul>
+              <li>Ande com <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> (ou as setas). Andar em chão livre não gera símbolo.</li>
+              <li>Árvores, portões, passagens, guardião, urna, estrela e portal são <strong>sólidos</strong>: encoste e aperte a tecla na direção deles. Cada toque gera um símbolo; segurar a tecla não repete.</li>
+              <li>O selinho de cada tile mostra o símbolo de Σ que ele gera. A região iluminada é o estado atual do autômato.</li>
+              <li>Toda travessia é de mão única. Para vencer, chegue à lanterna com a mochila vazia.</li>
+              <li><strong>Encerrar percurso</strong> diz ao autômato que a entrada acabou: aceita se o estado atual for final.</li>
+            </ul>
+          </details>
+        </section>
+
+        <section class="cartao" aria-labelledby="titulo-roteiro">
+          <div class="cartao-topo">
+            <h2 id="titulo-roteiro">Roteiro</h2>
+            <span class="nota">sequência de símbolos processada como num PDA puro, sem bloqueio</span>
+          </div>
+          <div class="roteiro-linha">
+            <label for="roteiro" class="rotulo">Cadeia de entrada sobre <span class="mono">Σ = {*, a, s, b, c}</span></label>
+            <input id="roteiro" class="mono" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ex.: *sabc" value="*sabc">
+            <div class="roteiro-botoes">
+              <button type="button" id="btn-executar" class="botao principal">Executar</button>
+              <button type="button" id="btn-passo" class="botao">Passo a passo</button>
+              <button type="button" id="btn-reiniciar-roteiro" class="botao">Reiniciar</button>
+            </div>
+          </div>
+          <p class="rotulo exemplos-titulo">Quatro situações prontas</p>
+          <div id="exemplos" class="exemplos"></div>
+        </section>
+
+      </div>
+
+      <aside class="cartao cartao-pda" aria-labelledby="titulo-pda">
+        <div class="cartao-topo">
+          <h2 id="titulo-pda">Autômato em tempo real</h2>
+          <span id="selo-modo" class="selo-modo">Modo Jogo</span>
+        </div>
+
+        <div class="pda-grade">
+          <div class="pda-esquerda">
+            <div class="bloco">
+              <p class="rotulo">Estado atual</p>
+              <p class="estado-linha"><span id="estado-id" class="estado-id mono">q0</span><span id="estado-nome" class="estado-nome"></span></p>
+              <p id="estado-desc" class="estado-desc"></p>
+            </div>
+            <div class="bloco">
+              <p class="rotulo">Símbolo sendo processado</p>
+              <p class="simbolo-linha"><span id="simbolo-atual" class="simbolo-atual mono">—</span><span id="simbolo-nome" class="simbolo-nome"></span></p>
+              <p id="transicao-atual" class="transicao-atual mono"></p>
+            </div>
+          </div>
+          <div class="bloco bloco-pilha">
+            <p class="rotulo">Pilha <span class="fraco">(mochila-tubo)</span></p>
+            <div id="pilha" class="pilha" aria-live="polite"></div>
+            <p class="pilha-texto">topo → <span id="pilha-texto" class="mono">Z</span></p>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <p class="rotulo">Fita de entrada</p>
+          <div id="fita" class="fita"></div>
+          <p id="fita-legenda" class="fita-legenda"></p>
+        </div>
+
+        <div id="resultado" class="resultado neutro" role="status" aria-live="polite"></div>
+
+        <div class="bloco">
+          <p class="rotulo">Histórico da computação</p>
+          <div id="historico-rolagem" class="historico-rolagem">
+            <table class="historico">
+              <thead>
+                <tr>
+                  <th title="Número do passo">Passo</th>
+                  <th title="Estado depois do passo">Estado</th>
+                  <th title="Símbolo lido da fita (λ = nenhum)">Lido</th>
+                  <th title="Topo da pilha consultado pelo passo">Topo</th>
+                  <th title="Pilha depois do passo, topo à esquerda">Pilha</th>
+                  <th>Transição aplicada</th>
+                </tr>
+              </thead>
+              <tbody id="historico"></tbody>
+            </table>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <section class="cartao" aria-labelledby="titulo-diagrama">
+      <div class="cartao-topo">
+        <h2 id="titulo-diagrama">Diagrama de estados</h2>
+        <span class="nota">notação do JFLAP: <span class="mono">lido, topo; empilha</span> · λ = vazio · gerado da mesma δ que o jogo usa</span>
+      </div>
+      <div class="diagrama-rolagem">
+        <div id="diagrama" class="diagrama"></div>
+      </div>
+      <p class="baixar">
+        <a class="botao principal" href="pda.jff" download="pda.jff">Baixar pda.jff</a>
+        <span>Arquivo do JFLAP 7.1 com este mesmo autômato. Abra em <span class="mono">File ▸ Open</span> e teste em <span class="mono">Input ▸ Multiple Run</span>, com aceitação por <strong>Final State</strong>.</span>
+      </p>
+    </section>
+
+    <section class="cartao" aria-labelledby="titulo-formal">
+      <div class="cartao-topo">
+        <h2 id="titulo-formal">Definição formal e regras de transição</h2>
+      </div>
+      <div class="formal-grade">
+        <div id="definicao" class="definicao"></div>
+        <div class="tabela-rolagem">
+          <table class="tabela-delta">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>De</th>
+                <th>Lido</th>
+                <th>Topo</th>
+                <th>Para</th>
+                <th>Empilha</th>
+                <th>JFLAP</th>
+                <th>No enredo</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-delta"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="cartao" aria-labelledby="titulo-legenda">
+      <div class="cartao-topo">
+        <h2 id="titulo-legenda">Legenda</h2>
+      </div>
+      <div class="legenda-grade">
+        <div>
+          <p class="rotulo"><span class="mono">Σ</span> — símbolos de entrada (eventos do jogo)</p>
+          <table class="legenda">
+            <thead><tr><th>Símbolo</th><th>Evento</th><th>Operação na pilha</th><th>No enredo</th></tr></thead>
+            <tbody id="legenda-sigma"></tbody>
+          </table>
+        </div>
+        <div>
+          <p class="rotulo">Γ — símbolos da pilha (o que há na mochila)</p>
+          <table class="legenda">
+            <thead><tr><th>Símbolo</th><th>Significa</th><th>No enredo</th></tr></thead>
+            <tbody id="legenda-gama"></tbody>
+          </table>
+          <p class="rotulo estados-titulo">Q — estados (regiões do mapa)</p>
+          <table class="legenda">
+            <thead><tr><th>Estado</th><th>Região</th><th>O que acontece lá</th></tr></thead>
+            <tbody id="legenda-estados"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <p>Trabalho 02 de Linguagens Formais e Autômatos — HTML, CSS e JavaScript puros, sem dependências.</p>
+  </footer>
+
+</div>
+
+<script src="js/automato.js"></script>
+<script src="js/pda.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

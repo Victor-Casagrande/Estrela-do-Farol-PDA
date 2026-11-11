@@ -1,0 +1,4 @@
+# Fim de linha LF em todo lugar: tests/jff.test.js compara o pda.jff byte a byte
+# com a saída do gerador.
+* text=auto eol=lf
+*.jff text eol=lf
