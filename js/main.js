@@ -25,6 +25,11 @@
   const DICA_PADRAO = 'Encoste em um tile com selo e aperte a tecla na direção dele: cada toque gera um símbolo.';
 
   const campo = document.getElementById('roteiro');
+  const mapaEl = document.getElementById('mapa');
+  const dpadEl = document.querySelector('.dpad');
+  const btnEncerrar = document.getElementById('btn-encerrar');
+  const btnEnviar = document.getElementById('btn-enviar');
+  const btnPasso = document.getElementById('btn-passo');
 
   let execucao = 0;       // muda a cada reinício; cancela animações em curso
   let ocupado = false;    // tocando atos: teclado travado
@@ -32,30 +37,74 @@
   let roteiro = null;     // { simbolos, pos, texto, automatico }
   let fita = null;        // modelo da fita mostrada
   let ultimaTecla = 0;
+  let estadoMostrado = M.inicial;   // estado que o painel exibe; fica atrás do motor durante a animação
 
   function esperar(ms) {
     return new Promise(function (resolver) { setTimeout(resolver, ms); });
   }
 
+  /* ---------- falhas: o teclado nunca fica travado ---------- */
+
+  // Recoloca a tela em dia com o jogo e o motor, que nunca param no meio de
+  // um passo: só a animação pode ter ficado pela metade.
+  function ressincronizar() {
+    const m = jogo.maquina;
+    estadoMostrado = m.estado;
+    fita.lidos = Array.from(m.consumidos).length;
+    fita.atual = -1;
+    ui.heroi(jogo.heroi.x, jogo.heroi.y, { salto: true });
+    ui.estado(m.estado);
+    ui.pilha(m.pilha, { imediato: true });
+    ui.fita(fita);
+    ui.regiaoAtiva(m.estado);
+    ui.diagramaAtivo(m.estado, -1);
+    ui.marcarUsados(jogo.atravessados);
+    if (jogo.resultado) { mostrarFim(); } else { atualizarContexto(); }
+  }
+
+  function relatarFalha(erro) {
+    if (typeof console !== 'undefined' && console.error) { console.error(erro); }
+    if (roteiro) { roteiro.automatico = false; }
+    try {
+      ressincronizar();
+      ui.aviso('Algo falhou ao animar este passo. A tela foi ressincronizada com o autômato; o histórico pode ter perdido uma linha. Clique em Reiniciar para recomeçar.', 'alerta');
+    } catch (outro) {
+      if (typeof console !== 'undefined' && console.error) { console.error(outro); }
+    }
+  }
+
+  // Todo fluxo assíncrono iniciado por tecla ou botão passa por aqui, para
+  // que uma exceção nunca vire uma promessa rejeitada sem tratamento.
+  function vigiar(promessa) {
+    promessa.catch(relatarFalha);
+  }
+
   /* ---------- o que depende da configuração atual ---------- */
 
+  // Fala do estado que o painel está mostrando, não do estado do motor: o
+  // jogo calcula o passo inteiro na hora e a animação vem depois.
   function textoEmAndamento() {
-    const m = jogo.maquina;
-    if (m.ehFinal()) {
-      return 'Estado atual ' + m.estado + ' ∈ F. Se a entrada terminasse agora, seria aceita.';
+    if (M.finais.indexOf(estadoMostrado) !== -1) {
+      return 'Estado atual ' + estadoMostrado + ' ∈ F. Se a entrada terminasse agora, seria aceita.';
     }
-    return 'Estado atual ' + m.estado + ' ∉ F. Se a entrada terminasse agora, seria rejeitada.';
+    return 'Estado atual ' + estadoMostrado + ' ∉ F. Se a entrada terminasse agora, seria rejeitada.';
   }
 
   function atualizarContexto() {
     const fim = jogo.resultado;
-    const semDicas = Boolean(fim) || origem === 'roteiro';
-    const beco = origem === 'roteiro' ? null : jogo.becoSemSaida();
+    const emRoteiro = origem === 'roteiro';
+    const semDicas = Boolean(fim) || emRoteiro;
+    const beco = emRoteiro ? null : jogo.becoSemSaida();
     ui.dicas(semDicas ? [] : jogo.dicas(), semDicas || beco ? '' : DICA_PADRAO);
     ui.beco(beco);
     if (!fim) { ui.resultado(null, textoEmAndamento()); }
-    document.getElementById('btn-encerrar').disabled = Boolean(fim);
-    document.getElementById('btn-enviar').disabled = origem !== 'wasd' || jogo.fita === '';
+    // "Encerrar percurso" é do modo WASD. Num roteiro a entrada já tem fim
+    // definido: encerrá-la antes daria o veredito de um prefixo da cadeia.
+    btnEncerrar.disabled = Boolean(fim) || emRoteiro;
+    btnEnviar.disabled = origem !== 'wasd' || jogo.fita === '';
+    // Roteiro terminado: "Passo a passo" só volta com Reiniciar ou ao editar
+    // a cadeia, para um clique a mais não apagar o resultado.
+    btnPasso.disabled = emRoteiro && Boolean(fim);
   }
 
   function mostrarFim() {
@@ -79,6 +128,7 @@
     origem = null;
     roteiro = null;
     jogo.reiniciar();
+    estadoMostrado = jogo.maquina.estado;
     fita = { simbolos: [], lidos: 0, atual: -1, erro: -1, aberta: true, encerrada: false };
 
     ui.heroi(jogo.heroi.x, jogo.heroi.y, { salto: true });
@@ -104,12 +154,17 @@
       if (!r.ok) { fita.erro = fita.lidos - 1; }
       ui.fita(fita);
     }
+    estadoMostrado = r.estado;
     ui.estado(r.estado);
     ui.transicao(r);
     ui.pilha(r.pilha, { consulta: r.ok && r.transicao.topo !== '' && r.transicao.empilha === r.transicao.topo });
     ui.historicoLinha(r);
     ui.diagramaAtivo(r.estado, r.indice);
     ui.regiaoAtiva(r.estado);
+    // O texto "em andamento" acompanha cada passo, inclusive os do meio de
+    // uma animação com vários atos (ex.: portal seguido da λ). Numa rejeição
+    // quem fala é o resultado final, mostrado logo em seguida.
+    if (r.ok) { ui.resultado(null, textoEmAndamento()); }
 
     if (!r.ok) {
       ui.tremer();
@@ -124,35 +179,40 @@
     const ficha = execucao;
     ocupado = true;
 
-    for (let a = 0; a < atos.length; a++) {
-      const ato = atos[a];
-      ui.processando(ato.simbolo);
+    try {
+      for (let a = 0; a < atos.length; a++) {
+        const ato = atos[a];
+        // Troca o símbolo exibido e limpa a transição do ato anterior.
+        ui.processando(ato.simbolo);
 
-      if (ato.tipo === 'lambda') {
-        await esperar(PAUSA_LAMBDA);
-        if (ficha !== execucao) { return false; }
-      }
-
-      let aplicado = !ato.registro;
-      for (let i = 0; i < ato.quadros.length; i++) {
-        if (!aplicado && i === ato.aplicarEm) {
-          aplicarRegistro(ato);
-          aplicado = true;
+        if (ato.tipo === 'lambda') {
+          await esperar(PAUSA_LAMBDA);
+          if (ficha !== execucao) { return false; }
         }
-        const q = ato.quadros[i];
-        ui.heroi(q.x, q.y, { salto: Boolean(q.salto), ms: msPorTile });
-        await esperar(q.salto ? 340 : msPorTile);
-        if (ficha !== execucao) { return false; }
-      }
-      if (!aplicado) { aplicarRegistro(ato); }
 
-      if (ato.tipo === 'travessia' || ato.tipo === 'lambda') {
-        ui.marcarUsados(jogo.atravessados);
+        let aplicado = !ato.registro;
+        for (let i = 0; i < ato.quadros.length; i++) {
+          if (!aplicado && i === ato.aplicarEm) {
+            aplicarRegistro(ato);
+            aplicado = true;
+          }
+          const q = ato.quadros[i];
+          ui.heroi(q.x, q.y, { salto: Boolean(q.salto), ms: msPorTile });
+          await esperar(q.salto ? 340 : msPorTile);
+          if (ficha !== execucao) { return false; }
+        }
+        if (!aplicado) { aplicarRegistro(ato); }
+
+        if (ato.tipo === 'travessia' || ato.tipo === 'lambda') {
+          ui.marcarUsados(jogo.atravessados);
+        }
       }
+      return true;
+    } finally {
+      // Libera o teclado mesmo se algo acima lançar uma exceção. Depois de um
+      // reinício não mexe: ele já liberou, e outra animação pode estar em curso.
+      if (ficha === execucao) { ocupado = false; }
     }
-
-    ocupado = false;
-    return true;
   }
 
   /* ---------- modo WASD ---------- */
@@ -209,21 +269,45 @@
     d: [1, 0], arrowright: [1, 0]
   };
 
+  // O foco está no mapa (ou no direcional logo abaixo dele)?
+  function focoNoMapa() {
+    const ativo = document.activeElement;
+    if (!ativo) { return false; }
+    return ativo === mapaEl || Boolean(dpadEl && dpadEl.contains(ativo));
+  }
+
+  function focarMapa() {
+    try { mapaEl.focus({ preventScroll: true }); } catch (e) { /* sem foco programático: segue pelo clique */ }
+  }
+
+  // Há um percurso em WASD em curso (ou pronto para começar)?
+  function percursoWasdAtivo() {
+    return !jogo.resultado && origem !== 'roteiro';
+  }
+
   window.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) { return; }
     const alvo = e.target;
     if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT' || alvo.isContentEditable)) {
       return;
     }
-    const d = DIRECOES[String(e.key).toLowerCase()];
+    const tecla = String(e.key).toLowerCase();
+    const d = DIRECOES[tecla];
     if (!d) { return; }
-    e.preventDefault();
-    mover(d[0], d[1], e.repeat);
+
+    // A tecla só é "do jogo" com o foco no mapa e um percurso WASD em curso.
+    // Fora disso o navegador age normalmente: as setas rolam a página e não
+    // movem a personagem. As letras W A S D continuam valendo em qualquer
+    // foco que não seja um campo de texto, porque não têm ação padrão.
+    const doJogo = focoNoMapa() && percursoWasdAtivo();
+    if (tecla.indexOf('arrow') === 0 && !doJogo) { return; }
+    if (doJogo) { e.preventDefault(); }
+    vigiar(mover(d[0], d[1], e.repeat));
   });
 
   Array.from(document.querySelectorAll('.dpad button')).forEach(function (botao) {
     botao.addEventListener('click', function () {
-      mover(Number(botao.getAttribute('data-dx')), Number(botao.getAttribute('data-dy')), false);
+      vigiar(mover(Number(botao.getAttribute('data-dx')), Number(botao.getAttribute('data-dy')), false));
     });
   });
 
@@ -325,23 +409,34 @@
 
   /* ---------- botões ---------- */
 
-  document.getElementById('btn-executar').addEventListener('click', executar);
-  document.getElementById('btn-passo').addEventListener('click', passoAPasso);
-  document.getElementById('btn-reiniciar').addEventListener('click', reiniciar);
+  document.getElementById('btn-executar').addEventListener('click', function () { vigiar(executar()); });
+  btnPasso.addEventListener('click', function () { vigiar(passoAPasso()); });
+  // O Reiniciar do cartão do mapa devolve o foco ao mapa, para as setas
+  // voltarem a mover a personagem; o do roteiro deixa o foco onde está.
+  document.getElementById('btn-reiniciar').addEventListener('click', function () {
+    reiniciar();
+    focarMapa();
+  });
   document.getElementById('btn-reiniciar-roteiro').addEventListener('click', reiniciar);
 
   campo.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { executar(); }
+    if (e.key === 'Enter') { vigiar(executar()); }
   });
 
-  document.getElementById('btn-encerrar').addEventListener('click', function () {
-    if (ocupado || jogo.resultado) { return; }
-    if (roteiro) { roteiro.automatico = false; }
+  // Editar a cadeia libera o "Passo a passo" travado pelo fim de um roteiro.
+  campo.addEventListener('input', function () {
+    btnPasso.disabled = false;
+  });
+
+  btnEncerrar.addEventListener('click', function () {
+    // Durante um roteiro (Executar ou Passo a passo) o botão está desabilitado;
+    // a checagem repete a regra para um clique disparado por outro caminho.
+    if (ocupado || jogo.resultado || origem === 'roteiro') { return; }
     jogo.encerrar();
     mostrarFim();
   });
 
-  document.getElementById('btn-enviar').addEventListener('click', function () {
+  btnEnviar.addEventListener('click', function () {
     if (jogo.fita === '') { return; }
     campo.value = jogo.fita;
     ui.aviso('Percurso "' + jogo.fita + '" copiado para o roteiro. Use Executar ou Passo a passo para reexecutá-lo.', 'bom');
@@ -359,9 +454,10 @@
 
   ui.exemplos(function (exemplo) {
     campo.value = exemplo.cadeia;
-    executar();
+    vigiar(executar());
   });
 
   ui.modo(false);
   reiniciar();
+  focarMapa();
 }());

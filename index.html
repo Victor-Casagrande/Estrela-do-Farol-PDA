@@ -118,7 +118,7 @@
           </div>
           <p id="modo-descricao" class="modo-descricao"></p>
 
-          <div id="mapa" class="mapa" aria-label="Mapa do jogo. Use as teclas W, A, S e D para mover a personagem."></div>
+          <div id="mapa" class="mapa" tabindex="0" role="group" aria-label="Mapa do jogo. Use as teclas W, A, S e D para mover a personagem; com o foco aqui, as setas também movem."></div>
 
           <div id="beco" class="beco" role="alert" hidden></div>
           <div id="dica" class="dica" aria-live="polite"></div>
@@ -141,7 +141,8 @@
           <details class="como-jogar">
             <summary>Como jogar</summary>
             <ul>
-              <li>Ande com <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> (ou as setas). Andar em chão livre não gera símbolo.</li>
+              <li>Ande com <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>. Andar em chão livre não gera símbolo.</li>
+              <li>As setas também movem, mas só com o foco no mapa (clique nele) e durante um percurso em WASD. Fora disso, elas rolam a página.</li>
               <li>Árvores, portões, passagens, guardião, urna, estrela e portal são <strong>sólidos</strong>: encoste e aperte a tecla na direção deles. Cada toque gera um símbolo; segurar a tecla não repete.</li>
               <li>O selinho de cada tile mostra o símbolo de Σ que ele gera. A região iluminada é o estado atual do autômato.</li>
               <li>Toda travessia é de mão única. Para vencer, chegue à lanterna com a mochila vazia.</li>
