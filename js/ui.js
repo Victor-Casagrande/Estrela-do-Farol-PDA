@@ -203,6 +203,10 @@
       $('estado-id').classList.toggle('final', final);
       $('estado-nome').textContent = e.nome + (final ? ' (final)' : '');
       $('estado-desc').textContent = e.descricao;
+      // Faixa compacta das telas estreitas.
+      $('faixa-estado').textContent = id;
+      $('faixa-estado').classList.toggle('final', final);
+      $('faixa-estado-nome').textContent = e.nome;
     };
 
     // Símbolo em processamento. null = nenhum. Sempre limpa a transição
@@ -216,9 +220,11 @@
         caixa.textContent = '—';
         caixa.classList.remove('ativo');
         $('simbolo-nome').textContent = 'nenhum símbolo lido ainda';
+        $('faixa-simbolo').textContent = '—';
         return;
       }
       caixa.textContent = PDA.mostrarLido(simbolo);
+      $('faixa-simbolo').textContent = PDA.mostrarLido(simbolo);
       caixa.classList.add('ativo');
       if (simbolo === '') {
         $('simbolo-nome').textContent = 'movimento vazio: nada é lido da fita';
@@ -269,6 +275,9 @@
         : nova.length > LIMITE_RESUMO ? nova.slice(0, LIMITE_RESUMO) + '… (' + nova.length + ' símbolos)'
         : nova;
       $('pilha-texto').setAttribute('title', nova === '' ? 'pilha vazia' : nova);
+      // Faixa compacta: o texto inteiro; o CSS corta o fim (o fundo da pilha)
+      // com reticências, então o topo, à esquerda, nunca some.
+      $('faixa-pilha').textContent = nova === '' ? 'λ (vazia)' : nova;
 
       let comum = 0;
       if (antiga !== null) {
@@ -350,6 +359,10 @@
     ui.resultado = function (res, textoNeutro) {
       const no = $('resultado');
       no.innerHTML = '';
+      // Faixa compacta: só o veredito.
+      const faixa = $('faixa-resultado');
+      faixa.className = 'faixa-resultado ' + (!res ? 'neutro' : res.aceita ? 'aceita' : 'rejeitada');
+      faixa.textContent = !res ? 'EM ANDAMENTO' : res.aceita ? 'ACEITA' : 'REJEITADA';
       if (!res) {
         no.className = 'resultado neutro';
         no.appendChild(el('span', { classe: 'veredito', texto: 'EM ANDAMENTO' }));

@@ -108,6 +108,27 @@
 
       <div class="coluna">
 
+        <!-- Resumo do painel "Autômato em tempo real". Só aparece em telas de
+             uma coluna (até 1080 px), onde o painel completo fica longe do mapa;
+             ali ela gruda no topo enquanto se joga. É uma cópia visual: o painel
+             completo é quem fala com leitores de tela. -->
+        <div id="faixa" class="faixa" aria-hidden="true">
+          <span class="faixa-item">
+            <span class="faixa-rotulo">Estado</span>
+            <b id="faixa-estado" class="faixa-estado">q0</b>
+            <span id="faixa-estado-nome" class="faixa-nome"></span>
+          </span>
+          <span class="faixa-item">
+            <span class="faixa-rotulo">Símbolo</span>
+            <b id="faixa-simbolo" class="faixa-simbolo mono">—</b>
+          </span>
+          <span class="faixa-item faixa-item-pilha">
+            <span class="faixa-rotulo">Pilha, topo →</span>
+            <b id="faixa-pilha" class="faixa-pilha mono">Z</b>
+          </span>
+          <span id="faixa-resultado" class="faixa-resultado neutro">EM ANDAMENTO</span>
+        </div>
+
         <section class="cartao cartao-mapa" aria-labelledby="titulo-mapa">
           <div class="cartao-topo">
             <h2 id="titulo-mapa">Mapa</h2>
