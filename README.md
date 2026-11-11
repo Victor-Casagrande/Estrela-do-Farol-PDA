@@ -317,6 +317,11 @@ lido e o que falta, pilha com o topo destacado e animação de empilhar/desempil
 `Passo | Estado | Lido | Topo | Pilha | Transição aplicada` e o resultado ACEITA ou REJEITADA com o
 motivo.
 
+Em janelas de até 1080 px de largura (ou com zoom alto) a página fica em uma coluna e o painel
+completo vai para baixo do mapa. Nesse caso uma **faixa compacta** fica presa ao topo enquanto se
+joga ou se roda um roteiro, com o estado atual, o símbolo em processamento, a pilha (topo à
+esquerda) e o resultado.
+
 ---
 
 ## 5. Arquivos
