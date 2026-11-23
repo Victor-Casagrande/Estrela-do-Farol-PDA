@@ -120,6 +120,20 @@
       }
       mapaEl.appendChild(grade);
 
+      // Fosso: as paredes em linha com a ponte levadiça, entre duas salas,
+      // são desenhadas como água. Só aparência: a GRADE continua a mesma e
+      // esses tiles continuam não caminháveis.
+      mapa.EVENTOS.forEach(function (ev) {
+        if (ev.tipo !== 'ponte') { return; }
+        [-1, 1].forEach(function (passo) {
+          let x = ev.x + passo;
+          while (mapa.tile(x, ev.y) === '#' && mapa.tile(x, ev.y - 1) !== '#' && mapa.tile(x, ev.y + 1) !== '#') {
+            tiles[x + ',' + ev.y].className = 'tile agua';
+            x += passo;
+          }
+        });
+      });
+
       M.estados.forEach(function (e) {
         const doEstado = mapa.tilesDe(e.id);
         const final = M.finais.indexOf(e.id) !== -1;

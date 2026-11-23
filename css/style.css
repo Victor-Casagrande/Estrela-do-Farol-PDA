@@ -260,48 +260,95 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   --chao: #d9cfb6;
 }
 
+/* Parede de pedra: duas fiadas de tijolo por tile, juntas alternadas. */
 .tile.parede {
-  background: #2b3550;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 15.5h32M0 31.5h32M16 0v15.5M.5 15.5v16' stroke='%23131a2c' stroke-opacity='.55' fill='none'/%3E%3Cpath d='M1 1h14M17 1h14M2 16.5h28' stroke='%23ffffff' stroke-opacity='.06' fill='none'/%3E%3C/svg%3E") center / 100% 100% no-repeat,
+    #2b3550;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .07);
 }
 
-.tile.mar {
+/* Mar: ondas em vez de bolinhas. */
+.tile.mar,
+.tile.agua {
   background:
-    radial-gradient(circle at 30% 35%, rgba(255, 255, 255, .16) 0 9%, transparent 10%),
-    radial-gradient(circle at 72% 70%, rgba(255, 255, 255, .11) 0 7%, transparent 8%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 11q3.5-3 7 0t7 0M15 24q3.5-3 7 0t7 0' fill='none' stroke='%23ffffff' stroke-opacity='.3' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat,
     #1d5a7c;
 }
 
-.tile.chao, .tile.objeto { background: var(--chao); }
+/* Fosso sob a ponte levadiça: paredes vizinhas a ela pintadas de água (ui.js);
+   a GRADE continua a mesma. A própria ponte fica sobre a água. */
+.tile.agua { background-color: #174e6d; box-shadow: inset 0 3px 0 rgba(0, 0, 0, .25), inset 0 -3px 0 rgba(0, 0, 0, .25); }
+.tile.vao.tipo-ponte { background-color: #174e6d; }
+
+/* Chão: cor da região + textura própria (desenhada por tile, alinhada à grade)
+   + linha sutil da grade em todas as salas, para contar passos. */
+.tile.chao, .tile.objeto {
+  background-color: var(--chao);
+  background-image: var(--textura, none);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.tile.chao { box-shadow: inset 0 0 0 1px rgba(28, 35, 51, .08); }
 
 /* Evento que ocupa um vão na parede (portão, passagem, ponte, estrela, escada). */
 .tile.vao {
-  background: var(--chao);
+  background-color: var(--chao);
   box-shadow: inset 0 0 0 2px rgba(43, 53, 80, .55);
 }
 
-.r-q0 { --chao: #bfdd9f; }
-.r-q1 { --chao: #dfe2a2; }
-.r-q2 { --chao: #c6d4ee; }
-.r-q3 { --chao: #ead6b1; }
-.r-q4 { --chao: #dbd3ea; }
-.r-q5 { --chao: #f2e3bf; }
-.r-qf { --chao: #ffe9a6; }
+/* q0 Clareira: grama com tufos. */
+.r-q0 {
+  --chao: #bfdd9f;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 24l1.5-4 1.5 4M7.5 24l1-3 1 3M20 12l1.5-4 1.5 4M22.5 12l1-3 1 3' stroke='%234d8a35' stroke-opacity='.55' stroke-width='1.1' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='26' cy='25' r='1.2' fill='%23ffffff' fill-opacity='.6'/%3E%3C/svg%3E");
+}
+/* q1 Colina: relva da encosta, curvas de nível. */
+.r-q1 {
+  --chao: #dfe2a2;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 9q16-6 32 0M0 23q16-6 32 0' stroke='%238f8f3e' stroke-opacity='.28' stroke-width='1.2' fill='none'/%3E%3Cpath d='M12 17l1.2-3 1.2 3' stroke='%23748a35' stroke-opacity='.45' fill='none'/%3E%3C/svg%3E");
+}
+/* q2 Gruta de Cristal: lascas de cristal. */
+.r-q2 {
+  --chao: #c6d4ee;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 11l3-6 3 6-3 4z' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M21 25l2.5-5 2.5 5-2.5 3z' fill='%236f93cf' fill-opacity='.45'/%3E%3Cpath d='M0 31l10-6M22 0l10 6' stroke='%236f93cf' stroke-opacity='.25' fill='none'/%3E%3C/svg%3E");
+}
+/* q3 Ponte do Guardião: tábuas de madeira. */
+.r-q3 {
+  --chao: #ead6b1;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 10.5h32M0 21.5h32M12 0v10.5M26 10.5v11M7 21.5V32' stroke='%23a07a45' stroke-opacity='.4' fill='none'/%3E%3Ccircle cx='3' cy='5' r='.9' fill='%237a5a30' fill-opacity='.5'/%3E%3Ccircle cx='29' cy='27' r='.9' fill='%237a5a30' fill-opacity='.5'/%3E%3C/svg%3E");
+}
+/* q4 Pátio do Portal: lajes de pedra. */
+.r-q4 {
+  --chao: #dbd3ea;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 16h32M18 0v16M9 16v16' stroke='%23857aa6' stroke-opacity='.38' stroke-width='1.1' fill='none'/%3E%3C/svg%3E");
+}
+/* q5 Farol: seixos. */
+.r-q5 {
+  --chao: #f2e3bf;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23a8895a' stroke-opacity='.35'%3E%3Cellipse cx='9' cy='9' rx='5.5' ry='4.5'/%3E%3Cellipse cx='23.5' cy='12' rx='6' ry='5'/%3E%3Cellipse cx='13' cy='24' rx='6' ry='4.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+/* qf Lanterna: ladrilho em losango. */
+.r-qf {
+  --chao: #ffe9a6;
+  --textura: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3l13 13-13 13L3 16z' stroke='%23c79a2a' stroke-opacity='.3' fill='none'/%3E%3C/svg%3E");
+}
 
-/* Regiões que não são o estado atual ficam escurecidas. */
+/* Regiões que não são o estado atual ficam escurecidas e menos saturadas,
+   mas com cor e textura visíveis, para planejar a rota. */
 .tile[data-regiao]::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(20, 27, 45, .5);
+  background: rgba(20, 27, 45, .38);
   opacity: 1;
   transition: opacity .25s ease;
   pointer-events: none;
 }
 
-.tile[data-regiao].ativa::after { opacity: 0; }
+.tile[data-regiao]:not(.ativa) { filter: saturate(.5); }
 
-.tile.chao.ativa { box-shadow: inset 0 0 0 1px rgba(28, 35, 51, .07); }
+.tile[data-regiao].ativa::after { opacity: 0; }
 
 .tile.saida-portal::before {
   content: "";
@@ -441,6 +488,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .mapa.fim-aceita .mapa-luz { opacity: 1; }
 /* Aceita: a lanterna ilumina o mapa inteiro, sem película nas salas. */
 .mapa.fim-aceita .tile[data-regiao]::after { opacity: 0; }
+.mapa.fim-aceita .tile[data-regiao] { filter: none; }
 .mapa.fim-aceita .tile.evento:not(.usado) .selo { opacity: 1; }
 .mapa.aceso .tile.lanterna { z-index: 4; }
 
