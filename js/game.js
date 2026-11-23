@@ -126,6 +126,28 @@
       return ev;
     }
 
+    // Tile da transição λ (a escada) ao lado da personagem, na direção dada,
+    // visto da região de onde ele é acessível.
+    function escadaNaDirecao(dx, dy) {
+      const ev = mapa.eventoEm(jogo.heroi.x + dx, jogo.heroi.y + dy);
+      if (!ev || ev.simbolo !== '' || ev.estado !== maquina.estado) { return null; }
+      return ev;
+    }
+
+    function nomeNaPilha(s) {
+      const g = M.gama.filter(function (x) { return x.simbolo === s; })[0];
+      return s === '' ? 'a pilha vazia' : g ? s + ' (' + g.nome + ')' : s;
+    }
+
+    // Por que a escada não se abre agora. Derivado da própria δ.
+    function explicarEscada() {
+      const t = M.delta.filter(function (x) { return x.de === maquina.estado && x.le === ''; })[0];
+      const inicio = 'λ não é símbolo de entrada: tocar a escada não lê nada da fita.';
+      if (!t) { return inicio + ' Nenhuma transição λ sai de ' + maquina.estado + '.'; }
+      return inicio + ' Ela se abre sozinha, pela transição "' + PDA.rotulo(t) + '", quando o topo da pilha for ' +
+        (t.topo === '' ? 'qualquer um' : nomeNaPilha(t.topo)) + '; agora o topo é ' + nomeNaPilha(maquina.topo()) + '.';
+    }
+
     /*
      * O que um toque no evento "ev" (acessível do estado atual) faria agora.
      * É a única cópia desta regra: tentarMover, dicas e situacaoEventos a usam.
@@ -135,6 +157,12 @@
      * estrito: trata como no Modo Estrito (o roteiro, que nunca bloqueia).
      */
     function classificar(ev, estrito) {
+      if (ev.simbolo === '') {
+        // A escada não lê símbolo: só a λ, aplicada sozinha, a atravessa.
+        const lambda = maquina.consultar('');
+        if (lambda) { return { efeito: 'ok', transicao: lambda, motivo: '' }; }
+        return { efeito: 'bloqueia', transicao: null, motivo: explicarEscada() };
+      }
       const transicao = maquina.consultar(ev.simbolo);
       if (transicao) { return { efeito: 'ok', transicao: transicao, motivo: '' }; }
       const motivo = PDA.explicarIndefinida(M, maquina.estado, ev.simbolo, maquina.topo());
@@ -152,6 +180,8 @@
      *   'parede'     nada a fazer nessa direção
      *   'repeticao'  tecla segurada diante de um evento: ignorado
      *   'bloqueado'  Modo Jogo, obstáculo sem transição: nada entra na fita
+     *   'escada'     toque na escada da λ fechada: nada entra na fita, o
+     *                motor não lê nada e o estado não muda (vale nos dois modos)
      *   'evento'     símbolo consumido com transição válida
      *   'rejeitada'  símbolo consumido sem transição: REJEITADA
      *   'encerrado'  o percurso já terminou
@@ -164,6 +194,18 @@
       if (mapa.caminhavel(nx, ny)) {
         jogo.heroi = { x: nx, y: ny };
         return { tipo: 'andou' };
+      }
+
+      // A escada da λ: nada entra na fita, o motor não lê nada e o estado
+      // não muda. Só explica por que ela ainda está fechada.
+      const escada = escadaNaDirecao(dx, dy);
+      if (escada) {
+        if (repeticao) { return { tipo: 'repeticao', evento: escada }; }
+        const ce = classificar(escada, jogo.modoEstrito);
+        if (ce.efeito !== 'ok') {
+          return { tipo: 'escada', evento: escada, simbolo: '', motivo: ce.motivo };
+        }
+        return { tipo: 'parede' };
       }
 
       const ev = eventoNaDirecao(dx, dy);
@@ -225,7 +267,7 @@
       if (jogo.resultado) { return []; }
       const lista = [];
       TECLAS.forEach(function (t) {
-        const ev = eventoNaDirecao(t.dx, t.dy);
+        const ev = eventoNaDirecao(t.dx, t.dy) || escadaNaDirecao(t.dx, t.dy);
         if (!ev) { return; }
         const c = classificar(ev, jogo.modoEstrito);
         lista.push({ tecla: t.tecla, evento: ev, simbolo: ev.simbolo, transicao: c.transicao, efeito: c.efeito, motivo: c.motivo });
@@ -243,7 +285,7 @@
       if (jogo.resultado) { return situacao; }
       const estrito = Boolean(opcoes && opcoes.estrito) || jogo.modoEstrito;
       mapa.EVENTOS.forEach(function (ev) {
-        if (ev.estado !== maquina.estado || ev.simbolo === '') { return; }
+        if (ev.estado !== maquina.estado) { return; }
         situacao[chave(ev)] = classificar(ev, estrito).efeito;
       });
       return situacao;

@@ -68,7 +68,8 @@
     <circle cx="16" cy="16" r="2" fill="#f4eeff"/>
   </symbol>
   <symbol id="i-escada" viewBox="0 0 32 32">
-    <path d="M5 28h6v-6h6v-6h6v-6h5" fill="none" stroke="#e9dcc0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M4 29h7v-6h6v-6h6v-6h6v18z" fill="#c9a874"/>
+    <path d="M4 29h7v-6h6v-6h6v-6h6" fill="none" stroke="#5a3d1e" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
   </symbol>
   <symbol id="i-lanterna" viewBox="0 0 32 32">
     <rect x="13" y="2" width="6" height="3.5" rx="1.2" fill="#3a4257"/>
@@ -165,7 +166,8 @@
               <li>Ande com <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>. Andar em chão livre não gera símbolo.</li>
               <li>As setas também movem, mas só com o foco no mapa (clique nele) e durante um percurso em WASD. Fora disso, elas rolam a página.</li>
               <li>Árvores, portões, passagens, guardião, urna, estrela e portal são <strong>sólidos</strong>: encoste e aperte a tecla na direção deles. Cada toque gera um símbolo; segurar a tecla não repete.</li>
-              <li>O selinho de cada tile mostra o símbolo de Σ que ele gera. A região iluminada é o estado atual do autômato.</li>
+              <li>O selinho de cada tile mostra o símbolo de Σ que ele gera. O selo λ da escada não é símbolo de entrada: ela abre sozinha, pela transição λ, quando a mochila fica vazia. A região iluminada é o estado atual do autômato.</li>
+              <li>Na região atual, anel verde contínuo = livre; listras = trancado (nada entra na fita); anel vermelho tracejado com "!" = tocar ali REJEITA.</li>
               <li>Toda travessia é de mão única. Para vencer, chegue à lanterna com a mochila vazia.</li>
               <li><strong>Encerrar percurso</strong> diz ao autômato que a entrada acabou: aceita se o estado atual for final.</li>
             </ul>

@@ -394,3 +394,45 @@ test('situação dos eventos: no beco o portal é perigo; com o percurso encerra
   tocar(jogo, 'c');
   assert.deepEqual(jogo.situacaoEventos(), {});
 });
+
+/* ---------- escada da λ (M6) ---------- */
+
+test('tocar a escada fechada explica a λ e não lê nada: fita, estado, pilha e histórico ficam iguais', function () {
+  [false, true].forEach(function (estrito) {
+    const jogo = novoJogo();
+    ['a', '*', 's', 'a', 'b', 'c'].forEach(function (s) { tocar(jogo, s); });
+    jogo.modoEstrito = estrito;
+    assert.equal(jogo.maquina.estado, 'q5');
+    assert.equal(jogo.maquina.pilha, 'KZ');
+
+    const escada = MAPA.eventoDe('q5', '');
+    const rota = MAPA.caminhoAte(jogo.heroi, escada);
+    rota.caminho.slice(1).forEach(function (p) { jogo.tentarMover(p.x - jogo.heroi.x, p.y - jogo.heroi.y, false); });
+    const antes = [jogo.fita, jogo.maquina.consumidos, jogo.maquina.estado, jogo.maquina.pilha,
+      jogo.maquina.historico.length, jogo.heroi.x, jogo.heroi.y];
+
+    assert.equal(jogo.tentarMover(rota.acesso.dx, rota.acesso.dy, true).tipo, 'repeticao');
+    const r = jogo.tentarMover(rota.acesso.dx, rota.acesso.dy, false);
+    assert.equal(r.tipo, 'escada', 'modo estrito: ' + estrito);
+    assert.equal(r.evento, escada);
+    assert.match(r.motivo, /λ não é símbolo de entrada/);
+    assert.match(r.motivo, /"λ, Z; λ"/);
+    assert.match(r.motivo, /agora o topo é K/);
+    assert.deepEqual([jogo.fita, jogo.maquina.consumidos, jogo.maquina.estado, jogo.maquina.pilha,
+      jogo.maquina.historico.length, jogo.heroi.x, jogo.heroi.y], antes, 'nada mudou');
+    assert.equal(jogo.resultado, null);
+
+    const dica = jogo.dicas().filter(function (d) { return d.evento === escada; })[0];
+    assert.ok(dica, 'a dica fala da escada');
+    assert.equal(dica.efeito, 'bloqueia');
+    assert.equal(dica.simbolo, '');
+    assert.equal(jogo.situacaoEventos()[escada.x + ',' + escada.y], 'bloqueia');
+    assert.equal(jogo.situacaoEventos({ estrito: true })[escada.x + ',' + escada.y], 'bloqueia',
+      'λ nunca entra na fita, então nunca é perigo');
+
+    // Depois de usar a chave na urna, a λ vem sozinha.
+    tocar(jogo, 'b');
+    assert.equal(jogo.maquina.estado, 'qf');
+    assert.equal(jogo.fita, 'a*sabcb');
+  });
+});
