@@ -481,3 +481,30 @@ test('marcas do mapa: somem no início da animação de um passo e voltam com a 
     }
   });
 });
+
+/* ---------- reação da personagem (M8) ---------- */
+
+test('Lia vira para o lado da tecla e pula ao colher, mas não ao atravessar', async function () {
+  const p = montar();
+  p.tecla('a');                       // anda para a esquerda
+  await p.avancar(50);
+  assert.deepEqual(p.ultima('olhar'), [-1]);
+  p.tecla('a');
+  p.tecla('a');                       // encosta na árvore (x = 3)
+  await p.avancar(50);
+  const antes = p.contar('pular');
+  p.tecla('a');                       // toque: colhe uma chave, não sai do lugar
+  await p.avancar(2000);
+  assert.equal(p.contar('pular'), antes + 1, 'colher dá um pulinho');
+
+  p.tecla('d');
+  await p.avancar(50);
+  assert.deepEqual(p.ultima('olhar'), [1], 'virou para a direita');
+  p.tecla('w');
+  await p.avancar(50);
+  const antesDaEstrela = p.contar('pular');
+  p.tecla('w');                       // toque na estrela: atravessa para a Colina
+  await p.avancar(2000);
+  assert.equal(p.estado(), 'q1');
+  assert.equal(p.contar('pular'), antesDaEstrela, 'travessia não pula');
+});

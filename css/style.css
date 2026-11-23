@@ -622,6 +622,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .45));
 }
 
+/* Direção: o corpo espelha ao andar para a esquerda (a mochila troca de lado). */
+.heroi .corpo { position: absolute; inset: 0; transition: transform .12s ease; }
+.heroi.esquerda .corpo { transform: scaleX(-1); }
+.heroi.pular svg { animation: pular .36s ease-out; }
+
+@keyframes pular {
+  40% { transform: translateY(-30%); }
+  75% { transform: translateY(0) scale(1.06, .92); }
+}
+
 .heroi.sem-transicao { transition: none; }
 .heroi.surgir svg { animation: surgir .32s ease-out; }
 .heroi.tremer svg { animation: tremer .32s ease; }

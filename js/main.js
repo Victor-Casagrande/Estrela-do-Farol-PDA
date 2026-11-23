@@ -184,6 +184,8 @@
       ui.piscarTile(ato.evento, 'negado');
     } else if (ato.evento) {
       ui.piscarTile(ato.evento, 'aceito');
+      // Colheu, entregou ou depositou sem mudar de sala: um pulinho.
+      if (ato.tipo === 'laco') { ui.pular(); }
     }
   }
 
@@ -252,6 +254,8 @@
     ultimaTecla = agora;
 
     const r = jogo.tentarMover(dx, dy, repeticao);
+    // Vira para o lado da tecla, mesmo quando encosta num evento ou parede.
+    if (r.tipo !== 'encerrado') { ui.olhar(dx); }
 
     if (r.tipo === 'andou') {
       ui.heroi(jogo.heroi.x, jogo.heroi.y, { ms: PASSO_WASD });

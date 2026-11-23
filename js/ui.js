@@ -211,7 +211,8 @@
       mapaEl.appendChild(mochilaEl);
       mapaEl.appendChild(vereditoEl);
 
-      heroiEl = el('div', { classe: 'heroi' }, [icone('lia', '')]);
+      // .corpo vira para o lado do movimento; o svg dentro dele faz as animações.
+      heroiEl = el('div', { classe: 'heroi' }, [el('span', { classe: 'corpo' }, [icone('lia', '')])]);
       mapaEl.appendChild(heroiEl);
     }
 
@@ -286,8 +287,18 @@
 
     // Move a personagem. opcoes.salto: aparece direto no destino (portal,
     // reinício). opcoes.ms: duração do deslize de um tile.
+    let heroiX = null;
+
+    // Vira a personagem para a esquerda (dx < 0) ou para a direita (dx > 0).
+    ui.olhar = function (dx) {
+      if (dx < 0) { heroiEl.classList.add('esquerda'); }
+      if (dx > 0) { heroiEl.classList.remove('esquerda'); }
+    };
+
     ui.heroi = function (x, y, opcoes) {
       opcoes = opcoes || {};
+      if (!opcoes.salto && heroiX !== null) { ui.olhar(x - heroiX); }
+      heroiX = x;
       if (opcoes.ms) { heroiEl.style.setProperty('--passo', opcoes.ms + 'ms'); }
       if (opcoes.salto) {
         heroiEl.classList.add('sem-transicao');
@@ -310,7 +321,14 @@
     }
 
     ui.tremer = function () {
+      heroiEl.classList.remove('pular');
       animarUmaVez(heroiEl, 'tremer');
+    };
+
+    // Pulinho de quem recebeu algo (ou entregou) sem sair do lugar.
+    ui.pular = function () {
+      heroiEl.classList.remove('tremer');
+      animarUmaVez(heroiEl, 'pular');
     };
 
     ui.piscarTile = function (ev, classe) {
