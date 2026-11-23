@@ -436,3 +436,26 @@ test('tocar a escada fechada explica a λ e não lê nada: fita, estado, pilha e
     assert.equal(jogo.fita, 'a*sabcb');
   });
 });
+
+/* ---------- dica curta do bloqueio ---------- */
+
+test('dica do bloqueio: resumo curto com o δ indefinido; a explicação inteira continua no motivo', function () {
+  const jogo = novoJogo();
+  tocar(jogo, '*');
+  const portao = MAPA.eventoDe('q1', 'b');
+  const rota = MAPA.caminhoAte(jogo.heroi, portao);
+  rota.caminho.slice(1).forEach(function (p) { jogo.tentarMover(p.x - jogo.heroi.x, p.y - jogo.heroi.y, false); });
+  const d = jogo.dicas()[0];
+  assert.equal(d.efeito, 'bloqueia');
+  assert.equal(d.resumo, 'δ(q1, b, E) indefinida');
+  assert.match(d.motivo, /^δ\(q1, b, E\) indefinida: em q1, "b" exige K/);
+  assert.equal(jogo.tentarMover(rota.acesso.dx, rota.acesso.dy, false).motivo, d.motivo, 'o aviso do toque mantém o motivo inteiro');
+
+  const escada = novoJogo();
+  ['a', '*', 's', 'a', 'b', 'c'].forEach(function (s) { tocar(escada, s); });
+  const ev = MAPA.eventoDe('q5', '');
+  const r = MAPA.caminhoAte(escada.heroi, ev);
+  r.caminho.slice(1).forEach(function (p) { escada.tentarMover(p.x - escada.heroi.x, p.y - escada.heroi.y, false); });
+  const de = escada.dicas().filter(function (x) { return x.evento === ev; })[0];
+  assert.equal(de.resumo, 'λ não é símbolo de entrada; a escada abre sozinha quando o topo for Z');
+});

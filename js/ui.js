@@ -599,7 +599,9 @@
           linha.appendChild(document.createTextNode('— ' + d.evento.acao + ' (símbolo ' + d.simbolo + ')'));
           linha.appendChild(el('code', { texto: PDA.rotulo(d.transicao) }));
         } else if (d.efeito === 'bloqueia') {
-          linha.appendChild(document.createTextNode('— bloqueado, nada entra na fita. ' + d.motivo));
+          // Curta: só o δ indefinido (ou, na escada, a λ). A explicação inteira
+          // aparece no aviso, se a tecla for apertada.
+          linha.appendChild(document.createTextNode('— trancado, nada entra na fita: ' + (d.resumo || d.motivo) + '.'));
         } else {
           linha.appendChild(document.createTextNode('— atenção: tocar aqui REJEITA a entrada. ' + d.motivo));
         }

@@ -148,6 +148,13 @@
         (t.topo === '' ? 'qualquer um' : nomeNaPilha(t.topo)) + '; agora o topo é ' + nomeNaPilha(maquina.topo()) + '.';
     }
 
+    // Versão curta, para a dica: o aviso do toque traz a explicação inteira.
+    function resumoEscada() {
+      const t = M.delta.filter(function (x) { return x.de === maquina.estado && x.le === ''; })[0];
+      const exige = t && t.topo !== '' ? ' quando o topo for ' + t.topo : '';
+      return 'λ não é símbolo de entrada; a escada abre sozinha' + exige;
+    }
+
     /*
      * O que um toque no evento "ev" (acessível do estado atual) faria agora.
      * É a única cópia desta regra: tentarMover, dicas e situacaoEventos a usam.
@@ -160,14 +167,15 @@
       if (ev.simbolo === '') {
         // A escada não lê símbolo: só a λ, aplicada sozinha, a atravessa.
         const lambda = maquina.consultar('');
-        if (lambda) { return { efeito: 'ok', transicao: lambda, motivo: '' }; }
-        return { efeito: 'bloqueia', transicao: null, motivo: explicarEscada() };
+        if (lambda) { return { efeito: 'ok', transicao: lambda, motivo: '', resumo: '' }; }
+        return { efeito: 'bloqueia', transicao: null, motivo: explicarEscada(), resumo: resumoEscada() };
       }
       const transicao = maquina.consultar(ev.simbolo);
-      if (transicao) { return { efeito: 'ok', transicao: transicao, motivo: '' }; }
+      if (transicao) { return { efeito: 'ok', transicao: transicao, motivo: '', resumo: '' }; }
       const motivo = PDA.explicarIndefinida(M, maquina.estado, ev.simbolo, maquina.topo());
+      const resumo = PDA.indefinida(maquina.estado, ev.simbolo, maquina.topo());
       const efeito = classeDe[ev.simbolo] === 'obstaculo' && !estrito ? 'bloqueia' : 'rejeita';
-      return { efeito: efeito, transicao: null, motivo: motivo };
+      return { efeito: efeito, transicao: null, motivo: motivo, resumo: resumo };
     }
 
     /*
@@ -270,7 +278,7 @@
         const ev = eventoNaDirecao(t.dx, t.dy) || escadaNaDirecao(t.dx, t.dy);
         if (!ev) { return; }
         const c = classificar(ev, jogo.modoEstrito);
-        lista.push({ tecla: t.tecla, evento: ev, simbolo: ev.simbolo, transicao: c.transicao, efeito: c.efeito, motivo: c.motivo });
+        lista.push({ tecla: t.tecla, evento: ev, simbolo: ev.simbolo, transicao: c.transicao, efeito: c.efeito, motivo: c.motivo, resumo: c.resumo });
       });
       return lista;
     };
