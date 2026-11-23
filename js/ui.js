@@ -257,7 +257,11 @@
       if (res.aceita) {
         motivo = 'parou em ' + res.estado + ' ∈ F: a lanterna acendeu';
       } else if (res.motivo.indexOf('δ(') === 0) {
-        motivo = res.motivo.split(':')[0];
+        // Só o "δ(q, a, X) indefinida" do começo. O corte é pelo fim dessa
+        // expressão, não pelo primeiro ":", que pode ser o próprio símbolo lido.
+        const marca = ') indefinida';
+        const fim = res.motivo.indexOf(marca);
+        motivo = fim === -1 ? res.motivo : res.motivo.slice(0, fim + marca.length);
       } else {
         motivo = 'parou em ' + res.estado + ' ∉ F';
       }

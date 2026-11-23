@@ -469,7 +469,22 @@ Os testes conferem que:
    percurso" é ignorado durante um roteiro, "Passo a passo" trava depois do resultado, as setas só
    são do jogo com o foco no mapa, o texto "em andamento" acompanha cada passo e uma falha na
    animação não trava o teclado. O `main.js` roda sem alteração dentro de um contexto `vm`, com um
-   DOM mínimo e um relógio virtual.
+   DOM mínimo e um relógio virtual;
+9. depois de uma falha de desenho em qualquer ponto (injetada nos testes), a tela é refeita a
+   partir do motor: o roteiro não pula símbolo nem muda de veredito, a fita em WASD não perde
+   símbolo, o histórico é reconstruído, nenhum veredito antigo fica sobre o mapa e nenhuma exceção
+   escapa dos botões;
+10. o `js/ui.js` de verdade monta a página inteira sobre um DOM mínimo (`tests/ui.test.js`), tem
+    todos os métodos que o `main.js` chama, e o veredito sobre o mapa mostra o δ indefinido inteiro
+    para qualquer símbolo rejeitado, inclusive `:`;
+11. nada alarga a página: toda tabela fica numa área com rolagem própria e o aviso quebra cadeias
+    longas sem espaço (`tests/pagina.test.js`).
+
+Além dos testes versionados, o projeto passou por um teste em massa com oráculo independente (um
+simulador de PDA próprio lendo o `pda.jff`): 1 milhão de cadeias no motor, 50 mil partidas no jogo,
+20 mil sessões de ações aleatórias sobre o `main.js` (parte delas com falha injetada) e 500 sessões
+na página real em Chrome. Os defeitos encontrados eram todos de interface e viraram os testes dos
+itens 9 a 11.
 
 ---
 
@@ -536,7 +551,7 @@ branch `main`, pasta `/ (root)`, **Save**. Em um ou dois minutos a página fica 
 `https://victor-casagrande.github.io/Estrela-do-Farol-PDA/`.
 
 **A cada publicação, troque o `?v=` do `index.html`.** O CSS e os seis scripts são carregados com
-o mesmo sufixo (por exemplo `js/main.js?v=20261123`). O navegador guarda esses arquivos em cache,
+o mesmo sufixo (por exemplo `js/main.js?v=20261123-2`). O navegador guarda esses arquivos em cache,
 e um `main.js` novo com um `game.js` antigo quebra a inicialização da página. Trocar o valor em
 todas as sete referências (a data da publicação serve) obriga o navegador a buscar a versão nova.
 `tests/pagina.test.js` confere que as sete têm o mesmo `?v=`.

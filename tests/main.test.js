@@ -525,3 +525,189 @@ test('E-01: se limpar as marcas do mapa falhar no início da animação, o tecla
   await p.avancar(50);
   assert.equal(p.contar('heroi'), antes + 1, 'a tecla seguinte moveu a personagem');
 });
+
+/* ---------- regressões do teste em massa (fuzzing) de 23/11 ---------- */
+
+test('B4: depois de editar a cadeia, "Passo a passo" continua habilitado mesmo trocando de modo', async function () {
+  const p = montar();
+  const passo = p.el('btn-passo');
+  const campo = p.el('roteiro');
+  campo.value = '';
+  p.el('btn-executar').click();
+  await p.avancar(1000);
+  assert.equal(p.veredito().aceita, false);
+  assert.equal(passo.disabled, true, 'desabilitado depois de REJEITADA');
+
+  // Trocar de modo sem editar não libera nada.
+  p.el('modo-estrito').click();
+  assert.equal(passo.disabled, true, 'trocar de modo sozinho não habilita');
+
+  campo.value = '*absc';
+  campo.disparar('input');
+  assert.equal(passo.disabled, false, 'editar habilita');
+  p.el('modo-jogo').click();
+  assert.equal(passo.disabled, false, 'Modo Jogo não desabilita de novo');
+  p.el('modo-estrito').click();
+  assert.equal(passo.disabled, false, 'Modo Estrito não desabilita de novo');
+
+  // O botão liberado roda a cadeia nova até o fim, e aí trava outra vez.
+  for (let i = 0; i < 5; i++) { passo.click(); await p.avancar(5000); }
+  assert.equal(p.veredito().aceita, true, '"*absc" é ACEITA');
+  assert.equal(passo.disabled, true, 'travado de novo depois do resultado novo');
+  p.el('modo-jogo').click();
+  assert.equal(passo.disabled, true, 'a edição antiga não vale para o resultado novo');
+});
+
+test('B5: uma falha de desenho no meio do roteiro não pula símbolo nem muda o veredito', async function () {
+  // Falha em ui.fita no instante em que cada símbolo de "a*aabbscb" começa.
+  for (let alvo = 0; alvo < 9; alvo++) {
+    const p = montar();
+    const passo = p.el('btn-passo');
+    p.el('roteiro').value = 'a*aabbscb';
+    for (let i = 0; i < alvo; i++) { passo.click(); await p.avancar(5000); }
+    p.falhar.fita = 1;
+    passo.click();
+    await p.avancar(5000);
+    assert.equal(p.errosNoConsole.length, 1, 'falha registrada (símbolo ' + alvo + ')');
+    for (let i = 0; i < 12 && !p.veredito(); i++) { passo.click(); await p.avancar(5000); }
+    assert.ok(p.veredito(), 'sem veredito (símbolo ' + alvo + ')');
+    assert.equal(p.veredito().aceita, true, 'falha no símbolo ' + alvo + ': ' + p.veredito().motivo);
+    assert.equal(p.ultima('fita')[0].lidos, 9, 'os 9 símbolos foram lidos (símbolo ' + alvo + ')');
+  }
+
+  // O caso do relatório: exemplo "Rota da Ponte" no Executar, falha aos 350 ms.
+  const p = montar();
+  p.escolherExemplo(1);
+  p.falhar.fita = 1;
+  await p.avancar(573);
+  for (let i = 0; i < 12 && !p.veredito(); i++) { p.el('btn-passo').click(); await p.avancar(5000); }
+  assert.equal(p.veredito().aceita, true, 'a*aabbscb continua ACEITA: ' + p.veredito().motivo);
+});
+
+test('B6: a ressincronização apaga do mapa um veredito que o motor não tem mais', async function () {
+  const p = montar();
+  p.el('btn-encerrar').click();
+  await p.avancar(100);
+  assert.equal(p.ultima('fim')[0].aceita, false, 'pré-condição: REJEITADA sobre o mapa');
+
+  p.falhar.pilha = 1;                 // falha dentro do reinício do roteiro
+  p.el('roteiro').value = '*sabc';
+  p.el('btn-passo').click();
+  await p.avancar(5000);
+  assert.equal(p.errosNoConsole.length, 1);
+  assert.equal(p.veredito(), null, 'o painel está em andamento');
+  assert.equal(p.ultima('fim')[0], null, 'o mapa não pode continuar mostrando o veredito antigo');
+  assert.equal(p.estado(), 'q0');
+
+  // E o roteiro roda normalmente no clique seguinte.
+  for (let i = 0; i < 5; i++) { p.el('btn-passo').click(); await p.avancar(5000); }
+  assert.equal(p.veredito().aceita, true);
+  assert.equal(p.ultima('fim')[0].aceita, true);
+});
+
+test('B7: uma falha de desenho num toque em WASD não perde o símbolo da fita nem o histórico', async function () {
+  for (const metodo of ['olhar', 'fita', 'dicas', 'processando', 'historicoLinha']) {
+    const p = montar();
+    await irAteAEstrela(p);
+    p.falhar[metodo] = 1;
+    p.tecla('w');                     // toca a estrela
+    await p.avancar(2000);
+    assert.equal(p.errosNoConsole.length, 1, 'falha em ui.' + metodo + ' registrada');
+    assert.equal(p.estado(), 'q1', 'ui.' + metodo + ': a estrela foi consumida');
+
+    const fita = p.ultima('fita')[0];
+    assert.equal(fita.simbolos.join(''), '*', 'ui.' + metodo + ': a fita mostra o símbolo consumido');
+    assert.equal(fita.lidos, 1, 'ui.' + metodo);
+    assert.equal(p.el('btn-enviar').disabled, false, 'ui.' + metodo + ': Enviar percurso habilitado');
+
+    // O histórico é refeito inteiro a partir do motor.
+    let desdeOLimpar = [];
+    p.chamadas.forEach(function (c) {
+      if (c.nome === 'historicoLimpar') { desdeOLimpar = []; }
+      if (c.nome === 'historicoLinha') { desdeOLimpar.push(c.args[0].estado); }
+    });
+    assert.deepEqual(desdeOLimpar, ['q1'], 'ui.' + metodo + ': histórico com a linha do "*"');
+
+    // O percurso segue e pode ser enviado ao roteiro.
+    p.el('btn-enviar').click();
+    assert.equal(p.el('roteiro').value, '*', 'ui.' + metodo);
+  }
+});
+
+test('B7: a mesma falha num símbolo que rejeita deixa a rejeição marcada na fita', async function () {
+  const p = montar();
+  p.el('modo-estrito').click();
+  await irAteAEstrela(p);
+  p.tecla('w');
+  await p.avancar(2000);
+  ['d', 'd', 'd', 'w'].forEach(function (k) { p.tecla(k); });   // até encostar no portão da Ponte
+  await p.avancar(50);
+  p.falhar.fita = 1;
+  p.tecla('d');                       // Modo Estrito, sem chave: REJEITADA
+  await p.avancar(2000);
+  assert.equal(p.errosNoConsole.length, 1);
+  assert.equal(p.veredito().aceita, false);
+  const fita = p.ultima('fita')[0];
+  assert.equal(fita.simbolos.join(''), '*b');
+  assert.equal(fita.erro, 1, 'o símbolo rejeitado fica marcado');
+  assert.equal(fita.encerrada, true);
+});
+
+test('B8: uma falha da interface não escapa dos cliques em Reiniciar, Encerrar, Enviar e nos modos', async function () {
+  const casos = [
+    { botao: 'btn-reiniciar', falha: 'fita' },
+    { botao: 'btn-reiniciar-roteiro', falha: 'pilha' },
+    { botao: 'btn-encerrar', falha: 'resultado' },
+    { botao: 'modo-estrito', falha: 'modo' },
+    { botao: 'modo-jogo', falha: 'modo' },
+    { botao: 'btn-enviar', falha: 'aviso', antes: async function (p) { await irAteAEstrela(p); p.tecla('w'); await p.avancar(2000); } }
+  ];
+  for (const caso of casos) {
+    const p = montar();
+    if (caso.antes) { await caso.antes(p); }
+    p.falhar[caso.falha] = 1;
+    assert.doesNotThrow(function () { p.el(caso.botao).click(); }, caso.botao + ': a exceção escapou do clique');
+    await p.avancar(100);
+    assert.equal(p.errosNoConsole.length, 1, caso.botao + ': a falha foi registrada');
+    assert.match(String(p.errosNoConsole[0].message), new RegExp('falha simulada em ui\\.' + caso.falha), caso.botao);
+
+    // A tela foi refeita e o jogo continua utilizável.
+    p.el('btn-reiniciar').click();
+    await p.avancar(100);
+    assert.equal(p.estado(), 'q0', caso.botao);
+    assert.equal(p.veredito(), null, caso.botao);
+    assert.equal(p.ultima('fim')[0], null, caso.botao);
+    const antes = p.contar('heroi');
+    p.tecla('a');
+    await p.avancar(50);
+    assert.equal(p.contar('heroi'), antes + 1, caso.botao + ': o teclado responde');
+  }
+});
+
+test('B8: o modo mostrado volta a bater com o modo do jogo depois de uma falha ao trocá-lo', async function () {
+  const p = montar();
+  p.falhar.modo = 1;
+  p.el('modo-estrito').click();
+  await p.avancar(100);
+  assert.equal(p.ultima('modo')[0], true, 'a tela refeita mostra o Modo Estrito, que é o do jogo');
+});
+
+test('B4: uma edição feita no meio do roteiro não deixa o "Passo a passo" liberado quando o resultado chega', async function () {
+  const p = montar();
+  const passo = p.el('btn-passo');
+  const campo = p.el('roteiro');
+  campo.value = '*sabc';
+  p.el('btn-executar').click();
+  await p.avancar(900);
+  assert.equal(p.veredito(), null, 'ainda no meio do roteiro');
+  campo.disparar('input');            // mexeu no campo durante a execução
+  await p.avancar(30000);
+  assert.equal(p.veredito().aceita, true);
+  assert.equal(passo.disabled, true, 'travado: a edição foi antes do resultado');
+  p.el('modo-estrito').click();
+  assert.equal(passo.disabled, true);
+  campo.disparar('input');            // agora sim, depois do resultado
+  assert.equal(passo.disabled, false);
+  p.el('modo-jogo').click();
+  assert.equal(passo.disabled, false);
+});

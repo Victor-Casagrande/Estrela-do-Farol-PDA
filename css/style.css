@@ -692,6 +692,9 @@ kbd {
   min-height: 1.5em;
   font-size: 13.5px;
   color: var(--tinta-2);
+  /* O aviso cita a cadeia do roteiro, que pode ser longa e sem espaços:
+     ela quebra em qualquer ponto em vez de alargar a página. */
+  overflow-wrap: anywhere;
 }
 
 .aviso.alerta { color: var(--nao); font-weight: 600; }

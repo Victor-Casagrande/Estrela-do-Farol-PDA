@@ -41,6 +41,8 @@
   let ultimaTecla = 0;
   let estadoMostrado = M.inicial;   // estado que o painel exibe; fica atrás do motor durante a animação
   let causaRejeicao = null; // tile de evento cujo símbolo rejeitou a entrada, se houver
+  let fimMostrado = false;   // o resultado deste percurso/roteiro já foi anunciado
+  let cadeiaEditada = false; // o campo do roteiro foi editado depois desse resultado
 
   function esperar(ms) {
     return new Promise(function (resolver) { setTimeout(resolver, ms); });
@@ -48,21 +50,47 @@
 
   /* ---------- falhas: o teclado nunca fica travado ---------- */
 
-  // Recoloca a tela em dia com o jogo e o motor, que nunca param no meio de
-  // um passo: só a animação pode ter ficado pela metade.
+  // Refaz a tela a partir do jogo e do motor, que nunca param no meio de um
+  // passo: só o desenho pode ter ficado pela metade. Nada do que é mostrado
+  // depende do que a interface conseguiu desenhar antes da falha: a fita, a
+  // posição do roteiro e o histórico são reconstruídos do que o motor leu.
   function ressincronizar() {
     const m = jogo.maquina;
+    const consumidos = Array.from(m.consumidos);
     estadoMostrado = m.estado;
-    fita.lidos = Array.from(m.consumidos).length;
+
+    if (origem === 'roteiro' && roteiro) {
+      // No roteiro a fita mostrada é a cadeia inteira; a posição volta a ser
+      // exatamente o que o motor já leu, para nenhum símbolo ser pulado.
+      roteiro.pos = consumidos.length;
+    } else {
+      // Em WASD a fita é o que o motor consumiu, nem mais nem menos.
+      fita.simbolos = consumidos.slice();
+      if (consumidos.length > 0) { origem = 'wasd'; }
+    }
+    fita.lidos = consumidos.length;
     fita.atual = -1;
+    const ultimo = m.historico[m.historico.length - 1];
+    fita.erro = ultimo && !ultimo.ok ? fita.lidos - 1 : -1;
+
+    ui.modo(jogo.modoEstrito);
     ui.heroi(jogo.heroi.x, jogo.heroi.y, { salto: true });
     ui.estado(m.estado);
+    if (consumidos.length === 0) { ui.processando(null); }
     ui.pilha(m.pilha, { imediato: true });
     ui.fita(fita);
+    ui.historicoLimpar();
+    m.historico.forEach(function (registro) { ui.historicoLinha(registro); });
     ui.regiaoAtiva(m.estado);
     ui.diagramaAtivo(m.estado, -1);
     ui.marcarUsados(jogo.atravessados);
-    if (jogo.resultado) { mostrarFim(); } else { atualizarContexto(); }
+    if (jogo.resultado) {
+      mostrarFim();
+    } else {
+      // Sem resultado no motor, nenhum veredito pode continuar sobre o mapa.
+      ui.fim(null);
+      atualizarContexto();
+    }
   }
 
   function relatarFalha(erro) {
@@ -70,7 +98,7 @@
     if (roteiro) { roteiro.automatico = false; }
     try {
       ressincronizar();
-      ui.aviso('Algo falhou ao animar este passo. A tela foi ressincronizada com o autômato; o histórico pode ter perdido uma linha. Clique em Reiniciar para recomeçar.', 'alerta');
+      ui.aviso('Algo falhou ao animar este passo. A tela foi refeita a partir do estado do autômato; se algo parecer errado, clique em Reiniciar.', 'alerta');
     } catch (outro) {
       if (typeof console !== 'undefined' && console.error) { console.error(outro); }
     }
@@ -80,6 +108,19 @@
   // que uma exceção nunca vire uma promessa rejeitada sem tratamento.
   function vigiar(promessa) {
     promessa.catch(relatarFalha);
+  }
+
+  // O mesmo para os ouvintes síncronos (Reiniciar, Encerrar, Enviar, modos):
+  // uma exceção da interface não escapa do clique; a tela é refeita.
+  function proteger(ouvinte) {
+    return function () {
+      try {
+        return ouvinte.apply(this, arguments);
+      } catch (erro) {
+        relatarFalha(erro);
+        return undefined;
+      }
+    };
   }
 
   /* ---------- o que depende da configuração atual ---------- */
@@ -108,13 +149,21 @@
     btnEncerrar.disabled = Boolean(fim) || emRoteiro;
     btnEnviar.disabled = origem !== 'wasd' || jogo.fita === '';
     // Roteiro terminado: "Passo a passo" só volta com Reiniciar ou ao editar
-    // a cadeia, para um clique a mais não apagar o resultado.
-    btnPasso.disabled = emRoteiro && Boolean(fim);
+    // a cadeia depois do resultado, para um clique a mais não apagá-lo. A
+    // edição fica lembrada em cadeiaEditada, porque esta função roda de novo
+    // a cada troca de modo e não pode desabilitar o que a edição liberou.
+    btnPasso.disabled = emRoteiro && Boolean(fim) && !cadeiaEditada;
     // O selo Modo Jogo / Modo Estrito só vale para o WASD: no roteiro some.
     seloModo.hidden = emRoteiro;
   }
 
   function mostrarFim() {
+    // Só vale a edição feita depois do resultado: uma edição no meio do
+    // roteiro não deixa o botão liberado quando o resultado chega.
+    if (!fimMostrado) {
+      fimMostrado = true;
+      cadeiaEditada = false;
+    }
     fita.encerrada = true;
     fita.atual = -1;
     ui.fita(fita);
@@ -138,6 +187,8 @@
     origem = null;
     roteiro = null;
     causaRejeicao = null;
+    fimMostrado = false;
+    cadeiaEditada = false;
     jogo.reiniciar();
     estadoMostrado = jogo.maquina.estado;
     fita = { simbolos: [], lidos: 0, atual: -1, erro: -1, aberta: true, encerrada: false };
@@ -387,10 +438,12 @@
     const ficha = execucao;
     const simbolo = roteiro.simbolos[roteiro.pos];
     fita.atual = roteiro.pos;
-    roteiro.pos++;
     ui.fita(fita);
 
+    // A posição só avança depois que o motor leu o símbolo: se o desenho
+    // acima falhar, o símbolo não é pulado.
     const r = jogo.processarSimbolo(simbolo);
+    roteiro.pos++;
     const inteiro = await tocar(r.atos, PASSO_ROTEIRO);
     if (!inteiro || ficha !== execucao) { return false; }
 
@@ -447,35 +500,37 @@
   btnPasso.addEventListener('click', function () { vigiar(passoAPasso()); });
   // O Reiniciar do cartão do mapa devolve o foco ao mapa, para as setas
   // voltarem a mover a personagem; o do roteiro deixa o foco onde está.
-  document.getElementById('btn-reiniciar').addEventListener('click', function () {
+  document.getElementById('btn-reiniciar').addEventListener('click', proteger(function () {
     reiniciar();
     focarMapa();
-  });
-  document.getElementById('btn-reiniciar-roteiro').addEventListener('click', reiniciar);
+  }));
+  document.getElementById('btn-reiniciar-roteiro').addEventListener('click', proteger(function () { reiniciar(); }));
 
   campo.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { vigiar(executar()); }
   });
 
-  // Editar a cadeia libera o "Passo a passo" travado pelo fim de um roteiro.
+  // Editar a cadeia libera o "Passo a passo" travado pelo fim de um roteiro,
+  // e ele continua liberado até o próximo (re)início.
   campo.addEventListener('input', function () {
+    if (fimMostrado) { cadeiaEditada = true; }
     btnPasso.disabled = false;
   });
 
-  btnEncerrar.addEventListener('click', function () {
+  btnEncerrar.addEventListener('click', proteger(function () {
     // Durante um roteiro (Executar ou Passo a passo) o botão está desabilitado;
     // a checagem repete a regra para um clique disparado por outro caminho.
     if (ocupado || jogo.resultado || origem === 'roteiro') { return; }
     jogo.encerrar();
     mostrarFim();
-  });
+  }));
 
-  btnEnviar.addEventListener('click', function () {
+  btnEnviar.addEventListener('click', proteger(function () {
     if (jogo.fita === '') { return; }
     campo.value = jogo.fita;
     ui.aviso('Percurso "' + jogo.fita + '" copiado para o roteiro. Use Executar ou Passo a passo para reexecutá-lo.', 'bom');
     campo.focus();
-  });
+  }));
 
   function definirModo(estrito) {
     jogo.modoEstrito = estrito;
@@ -483,8 +538,8 @@
     atualizarContexto();
   }
 
-  document.getElementById('modo-jogo').addEventListener('click', function () { definirModo(false); });
-  document.getElementById('modo-estrito').addEventListener('click', function () { definirModo(true); });
+  document.getElementById('modo-jogo').addEventListener('click', proteger(function () { definirModo(false); }));
+  document.getElementById('modo-estrito').addEventListener('click', proteger(function () { definirModo(true); }));
 
   ui.exemplos(function (exemplo) {
     campo.value = exemplo.cadeia;

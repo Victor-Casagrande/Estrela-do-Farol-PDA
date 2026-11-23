@@ -6,7 +6,7 @@
 <title>A Estrela do Farol — Autômato de Pilha</title>
 <meta name="description" content="Jogo cuja lógica é um autômato de pilha determinístico (PDA). Trabalho 02 de Linguagens Formais e Autômatos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3.5l3.4 8.2 8.8.7-6.7 5.8 2.1 8.6L16 22.2l-7.6 4.6 2.1-8.6-6.7-5.8 8.8-.7z' fill='%23ffd257' stroke='%23b9770e' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261123">
+<link rel="stylesheet" href="css/style.css?v=20261123-2">
 </head>
 <body>
 
@@ -304,22 +304,28 @@
       <div class="legenda-grade">
         <div>
           <p class="rotulo"><span class="mono">Σ</span> — símbolos de entrada (eventos do jogo)</p>
-          <table class="legenda">
-            <thead><tr><th>Símbolo</th><th>Evento</th><th>Operação na pilha</th><th>No enredo</th></tr></thead>
-            <tbody id="legenda-sigma"></tbody>
-          </table>
+          <div class="tabela-rolagem">
+            <table class="legenda">
+              <thead><tr><th>Símbolo</th><th>Evento</th><th>Operação na pilha</th><th>No enredo</th></tr></thead>
+              <tbody id="legenda-sigma"></tbody>
+            </table>
+          </div>
         </div>
         <div>
           <p class="rotulo">Γ — símbolos da pilha (o que há na mochila)</p>
-          <table class="legenda">
-            <thead><tr><th>Símbolo</th><th>Significa</th><th>No enredo</th></tr></thead>
-            <tbody id="legenda-gama"></tbody>
-          </table>
+          <div class="tabela-rolagem">
+            <table class="legenda">
+              <thead><tr><th>Símbolo</th><th>Significa</th><th>No enredo</th></tr></thead>
+              <tbody id="legenda-gama"></tbody>
+            </table>
+          </div>
           <p class="rotulo estados-titulo">Q — estados (regiões do mapa)</p>
-          <table class="legenda">
-            <thead><tr><th>Estado</th><th>Região</th><th>O que acontece lá</th></tr></thead>
-            <tbody id="legenda-estados"></tbody>
-          </table>
+          <div class="tabela-rolagem">
+            <table class="legenda">
+              <thead><tr><th>Estado</th><th>Região</th><th>O que acontece lá</th></tr></thead>
+              <tbody id="legenda-estados"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -334,11 +340,11 @@
 
 </div>
 
-<script src="js/automato.js?v=20261123"></script>
-<script src="js/pda.js?v=20261123"></script>
-<script src="js/mapa.js?v=20261123"></script>
-<script src="js/game.js?v=20261123"></script>
-<script src="js/ui.js?v=20261123"></script>
-<script src="js/main.js?v=20261123"></script>
+<script src="js/automato.js?v=20261123-2"></script>
+<script src="js/pda.js?v=20261123-2"></script>
+<script src="js/mapa.js?v=20261123-2"></script>
+<script src="js/game.js?v=20261123-2"></script>
+<script src="js/ui.js?v=20261123-2"></script>
+<script src="js/main.js?v=20261123-2"></script>
 </body>
 </html>

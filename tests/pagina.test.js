@@ -88,3 +88,28 @@ test('CSS e scripts levam o mesmo ?v= (troque a cada publicação para o navegad
   assert.equal(versoes.length, 7, 'style.css e os 6 scripts');
   assert.equal(new Set(versoes).size, 1, 'versões diferentes: ' + versoes.join(', '));
 });
+
+/* ---------- nada alarga a página (regressões do teste em massa) ---------- */
+
+test('B1: toda tabela da página fica dentro de uma área com rolagem própria', function () {
+  const re = /<table\b/g;
+  let m;
+  let tabelas = 0;
+  while ((m = re.exec(html)) !== null) {
+    tabelas++;
+    const antes = html.slice(0, m.index).replace(/\s+$/, '');
+    assert.match(antes, /<div[^>]*class="[^"]*rolagem[^"]*"[^>]*>$/,
+      'tabela fora de uma div de rolagem, perto de: ' + html.slice(m.index, m.index + 60));
+  }
+  assert.equal(tabelas, 5, 'histórico, tabela δ e as três da legenda');
+});
+
+test('B2: o aviso quebra cadeias longas sem espaço em vez de alargar a página', function () {
+  const css = fs.readFileSync(path.join(RAIZ, 'css', 'style.css'), 'utf8');
+  const regra = /\n\.aviso\s*\{([^}]*)\}/.exec(css);
+  assert.ok(regra, 'regra .aviso não encontrada');
+  assert.match(regra[1], /overflow-wrap:\s*anywhere/);
+  // As áreas de rolagem das tabelas continuam com rolagem horizontal própria.
+  assert.match(css, /\.tabela-rolagem\s*\{[^}]*overflow-x:\s*auto/);
+  assert.match(css, /\.historico-rolagem\s*\{[^}]*overflow:\s*auto/);
+});
