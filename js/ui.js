@@ -123,7 +123,11 @@
       M.estados.forEach(function (e) {
         const doEstado = mapa.tilesDe(e.id);
         const final = M.finais.indexOf(e.id) !== -1;
-        const rotulo = el('div', { classe: 'rotulo-regiao' }, [el('b', { texto: e.id }), ' · ' + e.nome]);
+        // O nome some no container estreito (CSS); o id fica.
+        const rotulo = el('div', { classe: 'rotulo-regiao', title: e.id + ' · ' + e.nome }, [
+          el('b', { texto: e.id }),
+          el('span', { classe: 'nome', texto: ' · ' + e.nome })
+        ]);
         if (final) {
           // Estado final: canto superior esquerdo. A personagem só chega a
           // qf pela escada, na fileira de baixo, e o fim do jogo é ali.
@@ -219,6 +223,21 @@
       }
     };
 
+    // Rótulo de região sob o tile (x, y) da personagem fica translúcido, para
+    // não disputar com ela. Compara retângulos em pixels do próprio mapa.
+    function rotulosSobHeroi(x, y) {
+      const tw = mapaEl.clientWidth / mapa.largura;
+      const th = mapaEl.clientHeight / mapa.altura;
+      const hx = x * tw;
+      const hy = y * th;
+      Object.keys(rotulosRegiao).forEach(function (id) {
+        const r = rotulosRegiao[id];
+        const cobre = r.offsetLeft < hx + tw - 1 && hx + 1 < r.offsetLeft + r.offsetWidth &&
+          r.offsetTop < hy + th - 1 && hy + 1 < r.offsetTop + r.offsetHeight;
+        r.classList.toggle('sob-heroi', cobre);
+      });
+    }
+
     // Move a personagem. opcoes.salto: aparece direto no destino (portal,
     // reinício). opcoes.ms: duração do deslize de um tile.
     ui.heroi = function (x, y, opcoes) {
@@ -230,6 +249,7 @@
       }
       heroiEl.style.left = (x * 100 / mapa.largura) + '%';
       heroiEl.style.top = (y * 100 / mapa.altura) + '%';
+      rotulosSobHeroi(x, y);
       if (opcoes.salto) {
         void heroiEl.offsetWidth;
         heroiEl.classList.remove('sem-transicao');

@@ -411,11 +411,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   font-size: clamp(8.5px, 1.5cqw, 12.5px);
   white-space: nowrap;
   pointer-events: none;
-  transition: background .25s ease, color .25s ease;
+  transition: background .25s ease, color .25s ease, opacity .2s ease;
 }
 
 .rotulo-regiao b { font-weight: 800; }
 .rotulo-regiao.no-alto { border-radius: 0 0 .5em 0; }
+/* Personagem embaixo do rótulo: ele quase some, para não disputar com ela. */
+.rotulo-regiao.sob-heroi { opacity: .28; }
+
+/* Mapa estreito (celular): só o id do estado; o nome cobriria a fileira
+   inteira de chão. O nome do estado atual segue na faixa e no painel. */
+@container (max-width: 520px) {
+  .rotulo-regiao .nome { display: none; }
+}
 
 /* ---------- fim da partida sobre o mapa (cópias visuais do resultado) ---------- */
 
