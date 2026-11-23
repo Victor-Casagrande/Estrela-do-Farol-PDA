@@ -1124,3 +1124,19 @@ tbody tr:last-child td { border-bottom: 0; }
   }
   .tile[data-regiao]::after { transition: none; }
 }
+
+/* Mapa estreito (tile de ~13 px): selo menor, para o ícone do evento continuar
+   visível. Fica depois do @media acima, que usa a mesma especificidade. */
+@container (max-width: 520px) {
+  .tile .selo {
+    min-width: 1.2em;
+    padding: 0 .08em;
+    font-size: 6.5px;
+    line-height: 1.15;
+  }
+  .tile .selo { border-radius: .35em 0 0 0; }
+  /* O "!" de canto cobriria o ícone, e o tracejado vira um quadro liso em
+     13 px: o "!" passa para dentro do selo ("c!"), sem depender da cor. */
+  .tile.sit-perigo::before { display: none; }
+  .tile.sit-perigo .selo::after { content: "!"; }
+}
