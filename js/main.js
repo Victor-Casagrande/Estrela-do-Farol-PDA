@@ -193,11 +193,13 @@
   async function tocar(atos, msPorTile) {
     const ficha = execucao;
     ocupado = true;
-    // As marcas do mapa valem para a configuração de antes do passo. Somem
-    // durante a animação e voltam com a nova, em atualizarContexto.
-    ui.situacaoEventos({});
 
     try {
+      // As marcas do mapa valem para a configuração de antes do passo. Somem
+      // durante a animação e voltam com a nova, em atualizarContexto. Fica
+      // dentro do try: se lançar, o finally ainda libera o teclado (E-01).
+      ui.situacaoEventos({});
+
       for (let a = 0; a < atos.length; a++) {
         const ato = atos[a];
         // Troca o símbolo exibido e limpa a transição do ato anterior.

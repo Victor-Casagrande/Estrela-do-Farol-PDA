@@ -508,3 +508,20 @@ test('Lia vira para o lado da tecla e pula ao colher, mas não ao atravessar', a
   assert.equal(p.estado(), 'q1');
   assert.equal(p.contar('pular'), antesDaEstrela, 'travessia não pula');
 });
+
+test('E-01: se limpar as marcas do mapa falhar no início da animação, o teclado continua respondendo', async function () {
+  const p = montar();
+  await irAteAEstrela(p);
+
+  p.falhar.situacaoEventos = 1;   // a próxima chamada a ui.situacaoEventos lança
+  p.tecla('w');                   // toca a estrela: tocar() começa limpando as marcas
+  await p.avancar(2000);
+  assert.equal(p.errosNoConsole.length, 1, 'a falha foi registrada, não engolida');
+  assert.match(String(p.errosNoConsole[0].message), /falha simulada em ui\.situacaoEventos/);
+  assert.equal(p.estado(), 'q1', 'a tela foi ressincronizada com o autômato');
+
+  const antes = p.contar('heroi');
+  p.tecla('d');
+  await p.avancar(50);
+  assert.equal(p.contar('heroi'), antes + 1, 'a tecla seguinte moveu a personagem');
+});
