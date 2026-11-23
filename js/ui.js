@@ -186,6 +186,19 @@
       mapaEl.classList.toggle('aceso', M.finais.indexOf(estado) !== -1);
     };
 
+    // Situação dos tiles de evento da região atual (chave "x,y" -> 'ok',
+    // 'bloqueia' ou 'rejeita'). Tiles fora do objeto ficam neutros.
+    const SITUACAO = { ok: 'sit-livre', bloqueia: 'sit-trancado', rejeita: 'sit-perigo' };
+    ui.situacaoEventos = function (situacao) {
+      mapa.EVENTOS.forEach(function (ev) {
+        const t = tiles[ev.x + ',' + ev.y];
+        const efeito = situacao ? situacao[ev.x + ',' + ev.y] : null;
+        Object.keys(SITUACAO).forEach(function (k) {
+          t.classList.toggle(SITUACAO[k], k === efeito);
+        });
+      });
+    };
+
     // Marca os tiles de travessia já usados (fechados atrás da personagem).
     ui.marcarUsados = function (atravessados) {
       mapa.EVENTOS.forEach(function (ev) {

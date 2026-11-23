@@ -127,6 +127,22 @@
     }
 
     /*
+     * O que um toque no evento "ev" (acessível do estado atual) faria agora.
+     * É a única cópia desta regra: tentarMover, dicas e situacaoEventos a usam.
+     *   'ok'        existe transição; o símbolo é consumido
+     *   'bloqueia'  sem transição, obstáculo no Modo Jogo: nada entra na fita
+     *   'rejeita'   sem transição e o símbolo entra na fita: REJEITADA
+     * estrito: trata como no Modo Estrito (o roteiro, que nunca bloqueia).
+     */
+    function classificar(ev, estrito) {
+      const transicao = maquina.consultar(ev.simbolo);
+      if (transicao) { return { efeito: 'ok', transicao: transicao, motivo: '' }; }
+      const motivo = PDA.explicarIndefinida(M, maquina.estado, ev.simbolo, maquina.topo());
+      const efeito = classeDe[ev.simbolo] === 'obstaculo' && !estrito ? 'bloqueia' : 'rejeita';
+      return { efeito: efeito, transicao: null, motivo: motivo };
+    }
+
+    /*
      * Modo WASD. Um toque de tecla na direção (dx, dy).
      * repeticao = true quando o toque veio de tecla segurada (auto-repetição):
      * serve para continuar andando, mas nunca dispara evento.
@@ -154,12 +170,10 @@
       if (!ev) { return { tipo: 'parede' }; }
       if (repeticao) { return { tipo: 'repeticao', evento: ev }; }
 
-      const transicao = maquina.consultar(ev.simbolo);
-      if (!transicao) {
-        const motivo = PDA.explicarIndefinida(M, maquina.estado, ev.simbolo, maquina.topo());
-        if (classeDe[ev.simbolo] === 'obstaculo' && !jogo.modoEstrito) {
-          return { tipo: 'bloqueado', evento: ev, simbolo: ev.simbolo, motivo: motivo };
-        }
+      const c = classificar(ev, jogo.modoEstrito);
+      const transicao = c.transicao;
+      if (c.efeito === 'bloqueia') {
+        return { tipo: 'bloqueado', evento: ev, simbolo: ev.simbolo, motivo: c.motivo };
       }
 
       const atos = aplicar(ev, ev.simbolo);
@@ -213,16 +227,26 @@
       TECLAS.forEach(function (t) {
         const ev = eventoNaDirecao(t.dx, t.dy);
         if (!ev) { return; }
-        const transicao = maquina.consultar(ev.simbolo);
-        let efeito = 'ok';
-        let motivo = '';
-        if (!transicao) {
-          motivo = PDA.explicarIndefinida(M, maquina.estado, ev.simbolo, maquina.topo());
-          efeito = classeDe[ev.simbolo] === 'obstaculo' && !jogo.modoEstrito ? 'bloqueia' : 'rejeita';
-        }
-        lista.push({ tecla: t.tecla, evento: ev, simbolo: ev.simbolo, transicao: transicao, efeito: efeito, motivo: motivo });
+        const c = classificar(ev, jogo.modoEstrito);
+        lista.push({ tecla: t.tecla, evento: ev, simbolo: ev.simbolo, transicao: c.transicao, efeito: c.efeito, motivo: c.motivo });
       });
       return lista;
+    };
+
+    // Situação de cada tile de evento da região atual, para o mapa mostrar
+    // o que está aberto, trancado ou perigoso. Chave "x,y" -> efeito de
+    // classificar(). Consulta o motor sem consumir nada.
+    // opcoes.estrito: classifica como no roteiro/Modo Estrito, mesmo se o
+    // jogo estiver no Modo Jogo.
+    jogo.situacaoEventos = function (opcoes) {
+      const situacao = {};
+      if (jogo.resultado) { return situacao; }
+      const estrito = Boolean(opcoes && opcoes.estrito) || jogo.modoEstrito;
+      mapa.EVENTOS.forEach(function (ev) {
+        if (ev.estado !== maquina.estado || ev.simbolo === '') { return; }
+        situacao[chave(ev)] = classificar(ev, estrito).efeito;
+      });
+      return situacao;
     };
 
     // Texto do aviso de beco sem saída, ou null.

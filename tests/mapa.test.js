@@ -345,3 +345,52 @@ test('reiniciar volta tudo à configuração inicial', function () {
   assert.deepEqual(jogo.atravessados, {});
   assert.equal(jogo.resultado, null);
 });
+
+/* ---------- situação dos eventos no mapa (M1) ---------- */
+
+function chaveDe(estado, simbolo) {
+  const ev = MAPA.eventoDe(estado, simbolo);
+  return ev.x + ',' + ev.y;
+}
+
+test('situação dos eventos: só a região atual, pela mesma regra das dicas, sem consumir nada', function () {
+  const jogo = novoJogo();
+  tocar(jogo, '*');
+  const antes = [jogo.fita, jogo.maquina.estado, jogo.maquina.pilha];
+
+  const s = jogo.situacaoEventos();
+  assert.deepEqual(Object.keys(s).sort(), [chaveDe('q1', 'a'), chaveDe('q1', 's'), chaveDe('q1', 'b')].sort(),
+    'só os eventos de q1 que leem um símbolo');
+  assert.equal(s[chaveDe('q1', 'a')], 'ok');
+  assert.equal(s[chaveDe('q1', 's')], 'ok', 'estrela no topo: passagem livre');
+  assert.equal(s[chaveDe('q1', 'b')], 'bloqueia', 'Modo Jogo: portão trancado');
+
+  // Roteiro (estrito: true) e Modo Estrito: o obstáculo sem transição vira perigo.
+  assert.equal(jogo.situacaoEventos({ estrito: true })[chaveDe('q1', 'b')], 'rejeita');
+  jogo.modoEstrito = true;
+  assert.equal(jogo.situacaoEventos()[chaveDe('q1', 'b')], 'rejeita');
+  jogo.modoEstrito = false;
+
+  // Depois de colher uma chave, os papéis se invertem.
+  tocar(jogo, 'a');
+  const depois = jogo.situacaoEventos();
+  assert.equal(depois[chaveDe('q1', 's')], 'bloqueia', 'chave sobre a estrela: passagem trancada');
+  assert.equal(depois[chaveDe('q1', 'b')], 'ok');
+
+  // A mesma classificação que a dica mostra ao lado do portão.
+  const portao = MAPA.eventoDe('q1', 'b');
+  const rota = MAPA.caminhoAte(jogo.heroi, portao);
+  rota.caminho.slice(1).forEach(function (p) { jogo.tentarMover(p.x - jogo.heroi.x, p.y - jogo.heroi.y, false); });
+  assert.equal(jogo.dicas()[0].efeito, jogo.situacaoEventos()[chaveDe('q1', 'b')]);
+
+  assert.deepEqual([jogo.fita, jogo.maquina.estado], ['*a', 'q1']);
+  assert.equal(antes[0], '*');
+});
+
+test('situação dos eventos: no beco o portal é perigo; com o percurso encerrado não há situação', function () {
+  const jogo = novoJogo();
+  ['*', 's', 'a', 'a', 'b'].forEach(function (s) { tocar(jogo, s); });
+  assert.deepEqual(jogo.situacaoEventos(), { [chaveDe('q4', 'c')]: 'rejeita' });
+  tocar(jogo, 'c');
+  assert.deepEqual(jogo.situacaoEventos(), {});
+});

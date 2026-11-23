@@ -98,6 +98,8 @@
     const beco = emRoteiro ? null : jogo.becoSemSaida();
     ui.dicas(semDicas ? [] : jogo.dicas(), semDicas || beco ? '' : DICA_PADRAO);
     ui.beco(beco);
+    // No roteiro não há bloqueio: o mapa classifica como no Modo Estrito.
+    ui.situacaoEventos(jogo.situacaoEventos({ estrito: emRoteiro }));
     if (!fim) { ui.resultado(null, textoEmAndamento()); }
     // "Encerrar percurso" é do modo WASD. Num roteiro a entrada já tem fim
     // definido: encerrá-la antes daria o veredito de um prefixo da cadeia.
