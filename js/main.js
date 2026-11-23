@@ -40,6 +40,7 @@
   let fita = null;        // modelo da fita mostrada
   let ultimaTecla = 0;
   let estadoMostrado = M.inicial;   // estado que o painel exibe; fica atrás do motor durante a animação
+  let causaRejeicao = null; // tile de evento cujo símbolo rejeitou a entrada, se houver
 
   function esperar(ms) {
     return new Promise(function (resolver) { setTimeout(resolver, ms); });
@@ -119,6 +120,7 @@
     ui.fita(fita);
     ui.resultado(jogo.resultado);
     ui.regiaoAtiva(jogo.maquina.estado);
+    ui.fim(jogo.resultado, causaRejeicao);
     const aceita = jogo.resultado.aceita;
     const noRoteiro = origem === 'roteiro';
     ui.aviso(
@@ -135,6 +137,7 @@
     ocupado = false;
     origem = null;
     roteiro = null;
+    causaRejeicao = null;
     jogo.reiniciar();
     estadoMostrado = jogo.maquina.estado;
     fita = { simbolos: [], lidos: 0, atual: -1, erro: -1, aberta: true, encerrada: false };
@@ -149,6 +152,7 @@
     ui.historicoLimpar();
     ui.diagramaAtivo(jogo.maquina.estado, -1);
     ui.aviso('');
+    ui.fim(null);
     atualizarContexto();
   }
 
@@ -175,6 +179,7 @@
     if (r.ok) { ui.resultado(null, textoEmAndamento()); }
 
     if (!r.ok) {
+      causaRejeicao = ato.evento || null;
       ui.tremer();
       ui.piscarTile(ato.evento, 'negado');
     } else if (ato.evento) {

@@ -122,22 +122,102 @@
 
       M.estados.forEach(function (e) {
         const doEstado = mapa.tilesDe(e.id);
-        // Canto inferior esquerdo da sala: ali nunca há tile de evento.
-        let minX = Infinity;
-        let maxY = -Infinity;
-        doEstado.forEach(function (p) {
-          if (p.y > maxY || (p.y === maxY && p.x < minX)) { minX = p.x; maxY = p.y; }
-        });
+        const final = M.finais.indexOf(e.id) !== -1;
         const rotulo = el('div', { classe: 'rotulo-regiao' }, [el('b', { texto: e.id }), ' · ' + e.nome]);
-        rotulo.style.left = (minX * 100 / mapa.largura) + '%';
-        rotulo.style.bottom = ((mapa.altura - maxY - 1) * 100 / mapa.altura) + '%';
+        if (final) {
+          // Estado final: canto superior esquerdo. A personagem só chega a
+          // qf pela escada, na fileira de baixo, e o fim do jogo é ali.
+          let minX = Infinity;
+          let minY = Infinity;
+          doEstado.forEach(function (p) {
+            if (p.y < minY || (p.y === minY && p.x < minX)) { minX = p.x; minY = p.y; }
+          });
+          rotulo.classList.add('no-alto');
+          rotulo.style.left = (minX * 100 / mapa.largura) + '%';
+          rotulo.style.top = (minY * 100 / mapa.altura) + '%';
+        } else {
+          // Canto inferior esquerdo da sala: ali nunca há tile de evento.
+          let minX = Infinity;
+          let maxY = -Infinity;
+          doEstado.forEach(function (p) {
+            if (p.y > maxY || (p.y === maxY && p.x < minX)) { minX = p.x; maxY = p.y; }
+          });
+          rotulo.style.left = (minX * 100 / mapa.largura) + '%';
+          rotulo.style.bottom = ((mapa.altura - maxY - 1) * 100 / mapa.altura) + '%';
+        }
         rotulosRegiao[e.id] = rotulo;
         mapaEl.appendChild(rotulo);
       });
 
+      // Camadas do fim da partida. São cópias visuais do resultado do painel:
+      // aria-hidden e sem receber clique. O veredito fica sobre o mar, onde
+      // nunca há personagem, lanterna ou tile de evento.
+      let lanterna = null;
+      let mar = null;
+      for (let y = 0; y < mapa.altura; y++) {
+        for (let x = 0; x < mapa.largura; x++) {
+          const c = mapa.tile(x, y);
+          if (c === 'L') { lanterna = { x: x, y: y }; }
+          if (c === '~') {
+            mar = mar || { x0: x, y0: y, x1: x, y1: y };
+            mar.x0 = Math.min(mar.x0, x); mar.y0 = Math.min(mar.y0, y);
+            mar.x1 = Math.max(mar.x1, x); mar.y1 = Math.max(mar.y1, y);
+          }
+        }
+      }
+      luzEl = el('div', { classe: 'mapa-luz', 'aria-hidden': 'true' });
+      if (lanterna) {
+        luzEl.style.setProperty('--lx', ((lanterna.x + 0.5) * 100 / mapa.largura) + '%');
+        luzEl.style.setProperty('--ly', ((lanterna.y + 0.5) * 100 / mapa.altura) + '%');
+      }
+      mapaEl.appendChild(luzEl);
+
+      vereditoEl = el('div', { classe: 'mapa-veredito', 'aria-hidden': 'true', hidden: '' }, [
+        el('span', { classe: 'mapa-veredito-titulo' }),
+        el('span', { classe: 'mapa-veredito-motivo' })
+      ]);
+      if (mar) {
+        vereditoEl.style.left = (mar.x0 * 100 / mapa.largura) + '%';
+        vereditoEl.style.top = (mar.y0 * 100 / mapa.altura) + '%';
+        vereditoEl.style.width = ((mar.x1 - mar.x0 + 1) * 100 / mapa.largura) + '%';
+        vereditoEl.style.height = ((mar.y1 - mar.y0 + 1) * 100 / mapa.altura) + '%';
+      }
+      mapaEl.appendChild(vereditoEl);
+
       heroiEl = el('div', { classe: 'heroi' }, [icone('lia', '')]);
       mapaEl.appendChild(heroiEl);
     }
+
+    let luzEl = null;
+    let vereditoEl = null;
+    let tileCausa = null;
+
+    // Fim da partida no mapa. res = { aceita, tipo, motivo, estado } ou null
+    // (reinício). causa: o tile de evento cujo símbolo rejeitou, se houver.
+    ui.fim = function (res, causa) {
+      mapaEl.classList.toggle('fim-aceita', Boolean(res && res.aceita));
+      mapaEl.classList.toggle('fim-rejeitada', Boolean(res && !res.aceita));
+      if (tileCausa) { tileCausa.classList.remove('causa'); tileCausa = null; }
+      if (!res) {
+        vereditoEl.hidden = true;
+        return;
+      }
+      let motivo;
+      if (res.aceita) {
+        motivo = 'parou em ' + res.estado + ' ∈ F: a lanterna acendeu';
+      } else if (res.motivo.indexOf('δ(') === 0) {
+        motivo = res.motivo.split(':')[0];
+      } else {
+        motivo = 'parou em ' + res.estado + ' ∉ F';
+      }
+      vereditoEl.querySelector('.mapa-veredito-titulo').textContent = res.aceita ? 'ACEITA' : 'REJEITADA';
+      vereditoEl.querySelector('.mapa-veredito-motivo').textContent = motivo;
+      vereditoEl.hidden = false;
+      if (!res.aceita && causa) {
+        tileCausa = tiles[causa.x + ',' + causa.y] || null;
+        if (tileCausa) { tileCausa.classList.add('causa'); }
+      }
+    };
 
     // Move a personagem. opcoes.salto: aparece direto no destino (portal,
     // reinício). opcoes.ms: duração do deslize de um tile.
