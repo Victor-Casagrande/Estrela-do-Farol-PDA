@@ -191,6 +191,9 @@
   async function tocar(atos, msPorTile) {
     const ficha = execucao;
     ocupado = true;
+    // As marcas do mapa valem para a configuração de antes do passo. Somem
+    // durante a animação e voltam com a nova, em atualizarContexto.
+    ui.situacaoEventos({});
 
     try {
       for (let a = 0; a < atos.length; a++) {

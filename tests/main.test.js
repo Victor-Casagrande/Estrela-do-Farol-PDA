@@ -441,3 +441,43 @@ test('E-01: a mesma falha durante um roteiro não impede de continuar o Passo a 
   assert.equal(p.veredito().aceita, true, 'o roteiro chega ao fim mesmo depois da falha');
   assert.equal(p.estado(), 'qf');
 });
+
+/* ---------- marcas do mapa durante a animação ---------- */
+
+test('marcas do mapa: somem no início da animação de um passo e voltam com a configuração nova', async function () {
+  function vazio(args) { return Object.keys(args[0] || {}).length === 0; }
+
+  // WASD: o toque na estrela.
+  const p = montar();
+  await irAteAEstrela(p);
+  assert.equal(vazio(p.ultima('situacaoEventos')), false, 'antes do toque a estrela e a árvore têm marca');
+  const inicio = p.chamadas.length;
+  p.tecla('w');
+  await p.avancar(2000);
+  const passo = p.chamadas.slice(inicio);
+  const nomes = passo.map(function (c) { return c.nome; });
+  const limpou = nomes.indexOf('situacaoEventos');
+  assert.ok(limpou >= 0 && vazio(passo[limpou].args), 'a primeira chamada do passo limpa as marcas');
+  assert.ok(limpou < nomes.indexOf('heroi') && limpou < nomes.indexOf('historicoLinha'), 'antes de animar');
+  passo.slice(limpou + 1, nomes.lastIndexOf('historicoLinha') + 1).forEach(function (c) {
+    if (c.nome === 'situacaoEventos') { assert.ok(vazio(c.args), 'nenhuma marca durante a animação'); }
+  });
+  assert.equal(p.estado(), 'q1');
+  assert.deepEqual(Object.keys(p.ultima('situacaoEventos')[0]).sort(),
+    MAPA.EVENTOS.filter(function (e) { return e.estado === 'q1' && e.simbolo !== ''; })
+      .map(function (e) { return e.x + ',' + e.y; }).sort(),
+    'no fim, as marcas são as da Colina');
+
+  // Roteiro: cada símbolo limpa antes de animar.
+  const r = montar();
+  r.el('roteiro').value = '*s';
+  r.el('btn-executar').click();
+  await r.avancar(10000);
+  let marcas = null;
+  r.chamadas.forEach(function (c) {
+    if (c.nome === 'situacaoEventos') { marcas = c.args[0]; }
+    if (c.nome === 'historicoLinha') {
+      assert.equal(Object.keys(marcas || {}).length, 0, 'passo ' + c.args[0].passo + ' animado sem marcas');
+    }
+  });
+});

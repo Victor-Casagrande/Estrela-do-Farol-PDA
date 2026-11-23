@@ -322,9 +322,10 @@ página normalmente.
   As marcas vêm de `jogo.situacaoEventos()`, que usa a mesma regra das dicas e do toque
   (`classificar()` em `js/game.js`) e só consulta o motor, sem consumir nada. Cada marca tem uma
   forma própria além da cor. No roteiro, que não tem bloqueio, e no Modo Estrito, o obstáculo sem
-  transição aparece como perigo.
+  transição aparece como perigo. As marcas valem para a configuração de antes de cada passo: somem
+  no início da animação e voltam com a configuração nova.
 - **Escada (λ).** A escada é o tile da transição `λ, Z; λ`, e λ não é símbolo de entrada: tocar a
-  escada não lê nada da fita, não chama o motor e não muda o estado, nos dois modos. Enquanto o
+  escada não lê nada da fita, não chama `passo()` do motor (só o consulta) e não muda o estado, nos dois modos. Enquanto o
   topo não for Z ela aparece trancada, e o toque só explica por quê ("ela se abre sozinha, pela
   transição "λ, Z; λ", quando o topo da pilha for Z"). Com Z no topo a λ é aplicada sozinha e Lia
   sobe a escada.
@@ -456,7 +457,8 @@ Os testes conferem que:
 5. em partidas simuladas, a região da personagem é sempre o estado do autômato, tecla segurada não
    repete evento, o Modo Jogo bloqueia e o Modo Estrito rejeita;
 6. as marcas do mapa (livre, trancado, perigo) cobrem só a região atual, seguem a mesma regra das
-   dicas, mudam com o topo da pilha e com o modo, e não consomem nada; no beco o portal é perigo;
+   dicas, mudam com o topo da pilha e com o modo, não consomem nada e somem durante a animação de
+   cada passo; no beco o portal é perigo;
 7. tocar a escada fechada, nos dois modos, explica a λ e não muda fita, símbolos consumidos,
    estado, pilha, histórico nem posição; depois de esvaziar a mochila a λ vem sozinha;
 8. os fluxos de `js/main.js` se comportam como descrito acima (`tests/main.test.js`): "Encerrar
