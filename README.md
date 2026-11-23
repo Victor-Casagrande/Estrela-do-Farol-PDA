@@ -311,6 +311,27 @@ página normalmente.
   apertar de novo. Isso evita coleta acidental.
 - **Dica antes de tocar.** Ao encostar em um tile, a página mostra o que a tecla fará, consultando
   o motor sem consumir nada.
+- **Marcas no mapa.** Cada tile de evento da região atual mostra, antes de qualquer toque, o que
+  o toque faria com o topo de pilha atual:
+  - **livre** (anel verde contínuo): existe δ(estado, símbolo, topo); o símbolo será consumido;
+  - **trancado** (listras e ícone apagado): obstáculo sem transição no Modo Jogo; tocar bloqueia
+    e nada entra na fita;
+  - **perigo** (anel vermelho tracejado e "!"; no mapa estreito, "!" dentro do selo): sem
+    transição e o símbolo entra na fita; tocar REJEITA.
+
+  As marcas vêm de `jogo.situacaoEventos()`, que usa a mesma regra das dicas e do toque
+  (`classificar()` em `js/game.js`) e só consulta o motor, sem consumir nada. Cada marca tem uma
+  forma própria além da cor. No roteiro, que não tem bloqueio, e no Modo Estrito, o obstáculo sem
+  transição aparece como perigo.
+- **Escada (λ).** A escada é o tile da transição `λ, Z; λ`, e λ não é símbolo de entrada: tocar a
+  escada não lê nada da fita, não chama o motor e não muda o estado, nos dois modos. Enquanto o
+  topo não for Z ela aparece trancada, e o toque só explica por quê ("ela se abre sozinha, pela
+  transição "λ, Z; λ", quando o topo da pilha for Z"). Com Z no topo a λ é aplicada sozinha e Lia
+  sobe a escada.
+- **Resultado sobre o mapa.** Ao fim da entrada, o mapa repete o veredito do painel sobre o mar:
+  ACEITA (as salas acendem e a luz da lanterna se espalha) ou REJEITADA, com o motivo curto
+  ("δ(q1, s, K) indefinida", "parou em q5 ∉ F"). O tile cujo símbolo rejeitou fica marcado. É só
+  uma cópia visual: quem anuncia o resultado para leitores de tela é o painel.
 - **Obstáculos (`s`, `b`).** O jogo consulta o motor *antes* de consumir o símbolo. Se não houver
   transição para (estado, símbolo, topo), a personagem é bloqueada, **nada é anexado à fita** e
   aparece a transição indefinida com o motivo, por exemplo: "δ(q1, b, E) indefinida: em q1, "b"
@@ -434,7 +455,11 @@ Os testes conferem que:
    do estado de destino, incluindo a escada da λ;
 5. em partidas simuladas, a região da personagem é sempre o estado do autômato, tecla segurada não
    repete evento, o Modo Jogo bloqueia e o Modo Estrito rejeita;
-6. os fluxos de `js/main.js` se comportam como descrito acima (`tests/main.test.js`): "Encerrar
+6. as marcas do mapa (livre, trancado, perigo) cobrem só a região atual, seguem a mesma regra das
+   dicas, mudam com o topo da pilha e com o modo, e não consomem nada; no beco o portal é perigo;
+7. tocar a escada fechada, nos dois modos, explica a λ e não muda fita, símbolos consumidos,
+   estado, pilha, histórico nem posição; depois de esvaziar a mochila a λ vem sozinha;
+8. os fluxos de `js/main.js` se comportam como descrito acima (`tests/main.test.js`): "Encerrar
    percurso" é ignorado durante um roteiro, "Passo a passo" trava depois do resultado, as setas só
    são do jogo com o foco no mapa, o texto "em andamento" acompanha cada passo e uma falha na
    animação não trava o teclado. O `main.js` roda sem alteração dentro de um contexto `vm`, com um
