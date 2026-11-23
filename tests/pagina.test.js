@@ -75,3 +75,16 @@ test('a captura do JFLAP está no repositório, com nome só em minúsculas, e �
     });
   });
 });
+
+test('CSS e scripts levam o mesmo ?v= (troque a cada publicação para o navegador não misturar versões)', function () {
+  const re = /<(?:link[^>]*\shref|script[^>]*\ssrc)="((?:css|js)\/[^"]+)"/g;
+  const versoes = [];
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const v = /\?v=([A-Za-z0-9._-]+)$/.exec(m[1]);
+    assert.ok(v, 'sem ?v=: ' + m[1]);
+    versoes.push(v[1]);
+  }
+  assert.equal(versoes.length, 7, 'style.css e os 6 scripts');
+  assert.equal(new Set(versoes).size, 1, 'versões diferentes: ' + versoes.join(', '));
+});

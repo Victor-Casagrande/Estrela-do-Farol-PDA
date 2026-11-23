@@ -530,3 +530,9 @@ git push -u origin main
 Depois, no repositório: `Settings ▸ Pages ▸ Build and deployment ▸ Source: Deploy from a branch`,
 branch `main`, pasta `/ (root)`, **Save**. Em um ou dois minutos a página fica em
 `https://victor-casagrande.github.io/Estrela-do-Farol-PDA/`.
+
+**A cada publicação, troque o `?v=` do `index.html`.** O CSS e os seis scripts são carregados com
+o mesmo sufixo (por exemplo `js/main.js?v=20261123`). O navegador guarda esses arquivos em cache,
+e um `main.js` novo com um `game.js` antigo quebra a inicialização da página. Trocar o valor em
+todas as sete referências (a data da publicação serve) obriga o navegador a buscar a versão nova.
+`tests/pagina.test.js` confere que as sete têm o mesmo `?v=`.
