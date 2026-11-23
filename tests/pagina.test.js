@@ -113,3 +113,17 @@ test('B2: o aviso quebra cadeias longas sem espaço em vez de alargar a página'
   assert.match(css, /\.tabela-rolagem\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(css, /\.historico-rolagem\s*\{[^}]*overflow:\s*auto/);
 });
+
+test('B9: a faixa compacta pode encolher, e a pilha longa é cortada em vez de alargar a página', function () {
+  const css = fs.readFileSync(path.join(RAIZ, 'css', 'style.css'), 'utf8');
+  const faixa = /\n\s*\.faixa\s*\{([^}]*position:\s*sticky[^}]*)\}/.exec(css);
+  assert.ok(faixa, 'regra da faixa fixa não encontrada');
+  assert.match(faixa[1], /min-width:\s*0/, 'a faixa é item de grid: precisa de min-width: 0');
+  const item = /\n\s*\.faixa-item\s*\{([^}]*)\}/.exec(css);
+  assert.match(item[1], /min-width:\s*0/);
+  const pilha = /\n\s*\.faixa-pilha\s*\{([^}]*)\}/.exec(css);
+  assert.match(pilha[1], /min-width:\s*0/);
+  assert.match(pilha[1], /overflow:\s*hidden/);
+  assert.match(pilha[1], /text-overflow:\s*ellipsis/);
+  assert.match(pilha[1], /white-space:\s*nowrap/);
+});

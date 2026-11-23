@@ -1135,6 +1135,10 @@ tbody tr:last-child td { border-bottom: 0; }
     position: sticky;
     top: 0;
     z-index: 20;
+    /* Item de grid: sem isto a largura mínima seria a do texto da pilha, que
+       não quebra, e uma pilha longa alargaria a coluna e a página inteira.
+       Com zero, quem cede é a pilha, cortada com reticências no fundo. */
+    min-width: 0;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
