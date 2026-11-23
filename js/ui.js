@@ -194,12 +194,21 @@
         el('span', { classe: 'mapa-veredito-titulo' }),
         el('span', { classe: 'mapa-veredito-motivo' })
       ]);
-      if (mar) {
-        vereditoEl.style.left = (mar.x0 * 100 / mapa.largura) + '%';
-        vereditoEl.style.top = (mar.y0 * 100 / mapa.altura) + '%';
-        vereditoEl.style.width = ((mar.x1 - mar.x0 + 1) * 100 / mapa.largura) + '%';
-        vereditoEl.style.height = ((mar.y1 - mar.y0 + 1) * 100 / mapa.altura) + '%';
-      }
+      // A mochila (a pilha) ocupa o mesmo mar enquanto se joga. Ela some
+      // quando o veredito aparece (CSS: .fim-aceita/.fim-rejeitada), então os
+      // dois nunca se sobrepõem.
+      mochilaEl = el('div', { classe: 'mapa-mochila', 'aria-hidden': 'true' }, [
+        el('span', { classe: 'mapa-mochila-rotulo', texto: 'Mochila · topo →' }),
+        el('span', { classe: 'mapa-mochila-itens' })
+      ]);
+      [vereditoEl, mochilaEl].forEach(function (camada) {
+        if (!mar) { return; }
+        camada.style.left = (mar.x0 * 100 / mapa.largura) + '%';
+        camada.style.top = (mar.y0 * 100 / mapa.altura) + '%';
+        camada.style.width = ((mar.x1 - mar.x0 + 1) * 100 / mapa.largura) + '%';
+        camada.style.height = ((mar.y1 - mar.y0 + 1) * 100 / mapa.altura) + '%';
+      });
+      mapaEl.appendChild(mochilaEl);
       mapaEl.appendChild(vereditoEl);
 
       heroiEl = el('div', { classe: 'heroi' }, [icone('lia', '')]);
@@ -208,7 +217,30 @@
 
     let luzEl = null;
     let vereditoEl = null;
+    let mochilaEl = null;
     let tileCausa = null;
+
+    // Cópia da pilha sobre o mar, topo à esquerda, como na faixa e no painel.
+    // Pilha longa: mostra os MAXIMO_MOCHILA - 1 de cima e "+n".
+    const MAXIMO_MOCHILA = 10;
+    function desenharMochila(pilha, quantasNovas) {
+      const itens = mochilaEl.querySelector('.mapa-mochila-itens');
+      itens.innerHTML = '';
+      const simbolos = Array.from(pilha);
+      const visiveis = simbolos.length > MAXIMO_MOCHILA ? simbolos.slice(0, MAXIMO_MOCHILA - 1) : simbolos;
+      visiveis.forEach(function (s, i) {
+        const c = el('span', { classe: 'mapa-mochila-item' + (i === 0 ? ' topo' : '') + (i < quantasNovas ? ' entrando' : '') });
+        if (ICONE_DE_PILHA[s]) { c.appendChild(icone(ICONE_DE_PILHA[s], '')); }
+        c.appendChild(el('span', { classe: 'letra', texto: s }));
+        itens.appendChild(c);
+      });
+      if (visiveis.length < simbolos.length) {
+        itens.appendChild(el('span', { classe: 'mapa-mochila-mais', texto: '+' + (simbolos.length - visiveis.length) }));
+      }
+      if (simbolos.length === 0) {
+        itens.appendChild(el('span', { classe: 'mapa-mochila-mais', texto: 'vazia' }));
+      }
+    }
 
     // Fim da partida no mapa. res = { aceita, tipo, motivo, estado } ou null
     // (reinício). causa: o tile de evento cujo símbolo rejeitou, se houver.
@@ -415,6 +447,7 @@
       }
       const removidas = antiga === null ? '' : antiga.slice(0, antiga.length - comum);
       const quantasNovas = antiga === null ? 0 : nova.length - comum;
+      desenharMochila(nova, quantasNovas);
 
       if (limpezaPilha) { clearTimeout(limpezaPilha); limpezaPilha = null; }
       cont.innerHTML = '';

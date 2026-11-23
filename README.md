@@ -384,6 +384,10 @@ lido e o que falta, pilha com o topo destacado e animação de empilhar/desempil
 `Passo | Estado | Lido | Topo | Pilha | Transição aplicada` e o resultado ACEITA ou REJEITADA com o
 motivo.
 
+O próprio mapa também mostra a pilha: durante a partida, a **mochila** aparece sobre o mar, com o
+topo à esquerda (pilha longa: os 9 de cima e "+n"). Quando o veredito aparece no mesmo mar, a
+mochila some, para os dois nunca se sobreporem; a pilha final continua no painel e na faixa.
+
 Em janelas de até 1080 px de largura (ou com zoom alto) a página fica em uma coluna e o painel
 completo vai para baixo do mapa. Nesse caso uma **faixa compacta** fica presa ao topo enquanto se
 joga ou se roda um roteiro, com o estado atual, o símbolo em processamento, a pilha (topo à

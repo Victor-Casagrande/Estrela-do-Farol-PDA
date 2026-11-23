@@ -536,6 +536,73 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .tile.causa { z-index: 3; box-shadow: inset 0 0 0 3px #e2493c; outline: 2px solid #ffd9d3; outline-offset: -1px; }
 
 @keyframes aparecer { from { opacity: 0; transform: scale(.9); } }
+
+/* ---------- mochila sobre o mar (cópia visual da pilha, M2) ---------- */
+
+.mapa-mochila {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5cqw;
+  pointer-events: none;
+}
+
+/* O veredito usa o mesmo mar: com ele na tela, a mochila some. */
+.mapa.fim-aceita .mapa-mochila,
+.mapa.fim-rejeitada .mapa-mochila { display: none; }
+
+.mapa-mochila-rotulo {
+  padding: .1em .6em;
+  border-radius: .4em;
+  background: rgba(17, 26, 46, .78);
+  color: #e9edf5;
+  font: 700 clamp(7px, 1.3cqw, 12px)/1.3 var(--mono);
+  letter-spacing: .06em;
+}
+
+.mapa-mochila-itens {
+  display: flex;
+  align-items: center;
+  gap: .6cqw;
+  padding: .5cqw .8cqw;
+  border-radius: .8cqw;
+  background: rgba(17, 26, 46, .55);
+}
+
+.mapa-mochila-item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: max(14px, 4.2cqw);
+  height: max(14px, 4.2cqw);
+  border: 1.5px solid #c9bfa6;
+  border-radius: 22%;
+  background: #fffdf8;
+  color: #535d72;
+}
+
+.mapa-mochila-item svg { width: 74%; height: 74%; }
+
+.mapa-mochila-item .letra {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  font: 800 clamp(6px, 1.1cqw, 11px)/1 var(--mono);
+  color: #1c2333;
+}
+
+.mapa-mochila-item.topo { border-color: #c9861a; box-shadow: 0 0 0 2px #ffd257; }
+.mapa-mochila-item.entrando { animation: entrar-mochila .3s ease-out; }
+
+.mapa-mochila-mais {
+  font: 800 clamp(7px, 1.3cqw, 12px)/1 var(--mono);
+  color: #e9edf5;
+}
+
+@keyframes entrar-mochila { from { transform: translateY(-40%) scale(.6); opacity: 0; } }
 .rotulo-regiao.ativa { background: #ffd257; color: #1c1403; }
 
 .heroi {
