@@ -136,10 +136,11 @@ p { margin: 0; }
 .lede {
   color: var(--tinta-2);
   font-size: 15.5px;
-  max-width: 78ch;
+  max-width: 132ch;
 }
 
 .lede strong { color: var(--tinta); }
+.lede .mono { white-space: nowrap; }   /* a δ não se parte entre duas linhas */
 
 /* ---------- cartões ---------- */
 
