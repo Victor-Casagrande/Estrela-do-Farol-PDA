@@ -72,38 +72,42 @@ p { margin: 0; }
 /* ---------- cabeçalho ---------- */
 
 .sobretitulo {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--tinta-3);
-  margin-bottom: 8px;
+  font: 600 12.5px/1.4 var(--sans);
+  letter-spacing: .04em;
+  color: var(--ambar-forte);
+  margin-bottom: 6px;
 }
 
-.cabecalho { margin-bottom: 14px; }
+.cabecalho { margin-bottom: 18px; }
 
 /* ---------- menu de seções ---------- */
 
+/* Barra de abas com uma linha embaixo, como índice da página. */
 .secoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding: 6px 0;
+  gap: 0 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--linha);
   background: var(--fundo);
 }
 
 .secoes a {
-  font: 600 13px/1 var(--sans);
+  font: 600 14px/1 var(--sans);
   color: var(--tinta-2);
   text-decoration: none;
-  padding: 7px 12px;
-  border: 1px solid var(--linha);
-  border-radius: 999px;
-  background: var(--cartao);
+  padding: 12px 0 11px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
 }
 
-.secoes a:hover { color: var(--tinta); border-color: var(--tinta-3); }
+.secoes a:hover { color: var(--tinta); border-bottom-color: var(--ambar); }
+
+/* Em tela estreita as abas não quebram linha: a barra rola de lado. */
+@media (max-width: 560px) {
+  .secoes { flex-wrap: nowrap; gap: 0 12px; overflow-x: auto; scrollbar-width: none; }
+  .secoes a { white-space: nowrap; margin-bottom: 0; font-size: 13.5px; }
+}
 
 /* Em duas colunas o menu gruda no topo, e o painel do autômato gruda logo
    abaixo dele: fica à vista enquanto se joga e enquanto se usa o roteiro.
@@ -119,12 +123,8 @@ p { margin: 0; }
   }
 }
 
-.topo-grade {
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-  gap: 28px;
-  align-items: end;
-}
+/* Uma coluna: título e, logo abaixo, o parágrafo de abertura. */
+.topo-grade { display: grid; gap: 10px; }
 
 .cabecalho h1 {
   font-family: var(--serifa);
@@ -136,7 +136,7 @@ p { margin: 0; }
 .lede {
   color: var(--tinta-2);
   font-size: 15.5px;
-  max-width: 68ch;
+  max-width: 78ch;
 }
 
 .lede strong { color: var(--tinta); }
