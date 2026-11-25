@@ -6,7 +6,7 @@
 <title>A Estrela do Farol — Autômato de Pilha</title>
 <meta name="description" content="Jogo cuja lógica é um autômato de pilha determinístico (PDA). Trabalho 02 de Linguagens Formais e Autômatos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3.5l3.4 8.2 8.8.7-6.7 5.8 2.1 8.6L16 22.2l-7.6 4.6 2.1-8.6-6.7-5.8 8.8-.7z' fill='%23ffd257' stroke='%23b9770e' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261123-2">
+<link rel="stylesheet" href="css/style.css?v=20261125">
 </head>
 <body>
 
@@ -103,6 +103,14 @@
     </div>
   </header>
 
+  <nav class="secoes" aria-label="Seções da página">
+    <a href="#secao-mapa">Jogar</a>
+    <a href="#secao-roteiro">Roteiro</a>
+    <a href="#secao-diagrama">Diagrama</a>
+    <a href="#secao-formal">Definição formal</a>
+    <a href="#secao-legenda">Legenda</a>
+  </nav>
+
   <main>
 
     <div class="palco">
@@ -130,7 +138,7 @@
           <span id="faixa-resultado" class="faixa-resultado neutro">EM ANDAMENTO</span>
         </div>
 
-        <section class="cartao cartao-mapa" aria-labelledby="titulo-mapa">
+        <section id="secao-mapa" class="cartao cartao-mapa" aria-labelledby="titulo-mapa">
           <div class="cartao-topo">
             <h2 id="titulo-mapa">Mapa</h2>
             <div class="modo" role="group" aria-label="Modo do percurso em WASD">
@@ -174,7 +182,7 @@
           </details>
         </section>
 
-        <section class="cartao" aria-labelledby="titulo-roteiro">
+        <section id="secao-roteiro" class="cartao" aria-labelledby="titulo-roteiro">
           <div class="cartao-topo">
             <h2 id="titulo-roteiro">Roteiro</h2>
             <span class="nota">sequência de símbolos processada como num PDA puro, sem bloqueio</span>
@@ -250,28 +258,31 @@
 
     </div>
 
-    <section class="cartao" aria-labelledby="titulo-diagrama">
+    <section id="secao-diagrama" class="cartao" aria-labelledby="titulo-diagrama">
       <div class="cartao-topo">
         <h2 id="titulo-diagrama">Diagrama de estados</h2>
-        <span class="nota">notação do JFLAP: <span class="mono">lido, topo; empilha</span> · λ (notação do JFLAP 7.1) = ε nos slides · gerado da mesma δ que o jogo usa</span>
+        <span class="nota">rótulos no formato do JFLAP: <span class="mono">lido, topo; empilha</span> · λ = ε dos slides</span>
       </div>
       <div class="diagrama-rolagem">
         <div id="diagrama" class="diagrama"></div>
       </div>
-      <figure class="figura-jflap">
-        <a href="img/jflap-diagrama.png" target="_blank" rel="noopener" title="Abrir a imagem em tamanho real em outra aba">
-          <img src="img/jflap-diagrama.png" width="1010" height="455" loading="lazy"
-               alt="Captura do JFLAP 7.1 com o autômato de pilha do arquivo pda.jff. Sete estados em sequência: q0 (Clareira, inicial), q1 (Colina da Estrela), q2 (Gruta de Cristal), q3 (Ponte do Guardião), q4 (Pátio do Portal), q5 (Farol) e qf (Lanterna acesa, final). As 16 transições são as da tabela desta página, rotuladas no formato lido, topo; empilha.">
-        </a>
-        <figcaption>Diagrama do autômato no JFLAP 7.1 (pda.jff)</figcaption>
-      </figure>
       <p class="baixar">
         <a class="botao principal" href="pda.jff" download="pda.jff">Baixar pda.jff</a>
-        <span>Arquivo do JFLAP 7.1 com este mesmo autômato. Abra em <span class="mono">File ▸ Open</span> e teste em <span class="mono">Input ▸ Multiple Run</span>, com aceitação por <strong>Final State</strong>.</span>
+        <span>Desenhado a partir da mesma δ que o jogo usa. O arquivo do JFLAP 7.1 tem este mesmo autômato: abra em <span class="mono">File ▸ Open</span> e teste em <span class="mono">Input ▸ Multiple Run</span>, com aceitação por <strong>Final State</strong>.</span>
       </p>
+      <details class="jflap-detalhes">
+        <summary>Ver a captura do JFLAP 7.1</summary>
+        <figure class="figura-jflap">
+          <a href="img/jflap-diagrama.png" target="_blank" rel="noopener" title="Abrir a imagem em tamanho real em outra aba">
+            <img src="img/jflap-diagrama.png" width="1010" height="455" loading="lazy"
+                 alt="Captura do JFLAP 7.1 com o autômato de pilha do arquivo pda.jff. Sete estados em sequência: q0 (Clareira, inicial), q1 (Colina da Estrela), q2 (Gruta de Cristal), q3 (Ponte do Guardião), q4 (Pátio do Portal), q5 (Farol) e qf (Lanterna acesa, final). As 16 transições são as da tabela desta página, rotuladas no formato lido, topo; empilha.">
+          </a>
+          <figcaption>Diagrama do autômato no JFLAP 7.1 (pda.jff)</figcaption>
+        </figure>
+      </details>
     </section>
 
-    <section class="cartao" aria-labelledby="titulo-formal">
+    <section id="secao-formal" class="cartao" aria-labelledby="titulo-formal">
       <div class="cartao-topo">
         <h2 id="titulo-formal">Definição formal e regras de transição</h2>
       </div>
@@ -297,7 +308,7 @@
       </div>
     </section>
 
-    <section class="cartao" aria-labelledby="titulo-legenda">
+    <section id="secao-legenda" class="cartao" aria-labelledby="titulo-legenda">
       <div class="cartao-topo">
         <h2 id="titulo-legenda">Legenda</h2>
       </div>
@@ -340,11 +351,11 @@
 
 </div>
 
-<script src="js/automato.js?v=20261123-2"></script>
-<script src="js/pda.js?v=20261123-2"></script>
-<script src="js/mapa.js?v=20261123-2"></script>
-<script src="js/game.js?v=20261123-2"></script>
-<script src="js/ui.js?v=20261123-2"></script>
-<script src="js/main.js?v=20261123-2"></script>
+<script src="js/automato.js?v=20261125"></script>
+<script src="js/pda.js?v=20261125"></script>
+<script src="js/mapa.js?v=20261125"></script>
+<script src="js/game.js?v=20261125"></script>
+<script src="js/ui.js?v=20261125"></script>
+<script src="js/main.js?v=20261125"></script>
 </body>
 </html>

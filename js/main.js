@@ -22,8 +22,7 @@
   const DURACAO_PASSO = 600;    // duração mínima de um passo do roteiro
   const INTERVALO_TECLA = 75;   // limite de velocidade com a tecla segurada
 
-  const DICA_PADRAO = 'Encoste em um tile com selo de Σ (*, a, s, b, c) e aperte a tecla na direção dele: cada toque gera um símbolo. ' +
-    'O selo λ marca a escada, que não lê símbolo: ela abre sozinha quando a mochila fica vazia.';
+  const DICA_PADRAO = 'Encoste em um tile com selo e aperte a tecla na direção dele: cada toque gera um símbolo. Detalhes em "Como jogar", abaixo.';
 
   const campo = document.getElementById('roteiro');
   const mapaEl = document.getElementById('mapa');
