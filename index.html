@@ -6,7 +6,7 @@
 <title>A Estrela do Farol — Autômato de Pilha</title>
 <meta name="description" content="Jogo cuja lógica é um autômato de pilha determinístico (PDA). Trabalho 02 de Linguagens Formais e Autômatos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3.5l3.4 8.2 8.8.7-6.7 5.8 2.1 8.6L16 22.2l-7.6 4.6 2.1-8.6-6.7-5.8 8.8-.7z' fill='%23ffd257' stroke='%23b9770e' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261125-3">
+<link rel="stylesheet" href="css/style.css?v=20261126-1">
 </head>
 <body>
 
@@ -268,10 +268,11 @@
       </div>
       <p class="baixar">
         <a class="botao principal" href="pda.jff" download="pda.jff">Baixar pda.jff</a>
+        <a class="botao" href="https://github.com/Victor-Casagrande/Estrela-do-Farol-PDA">Código no GitHub</a>
         <span>Desenhado a partir da mesma δ que o jogo usa. O arquivo do JFLAP 7.1 tem este mesmo autômato: abra em <span class="mono">File ▸ Open</span> e teste em <span class="mono">Input ▸ Multiple Run</span>, com aceitação por <strong>Final State</strong>.</span>
       </p>
-      <details class="jflap-detalhes">
-        <summary>Ver a captura do JFLAP 7.1</summary>
+      <details class="jflap-detalhes" open>
+        <summary>Diagrama no JFLAP 7.1 (captura do pda.jff)</summary>
         <figure class="figura-jflap">
           <a href="img/jflap-diagrama.png" target="_blank" rel="noopener" title="Abrir a imagem em tamanho real em outra aba">
             <img src="img/jflap-diagrama.png" width="1010" height="455" loading="lazy"
@@ -305,6 +306,16 @@
             <tbody id="tabela-delta"></tbody>
           </table>
         </div>
+      </div>
+      <div class="linguagem">
+        <h3>Linguagem reconhecida</h3>
+        <p class="formula mono">
+          <span>L(M) = { aⁿ * s a b c bⁿ | n ≥ 0 }</span>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∪ { aⁿ * aᵐ bᵐ s c bⁿ | n ≥ 0, m ≥ 1 }</span>
+        </p>
+        <p>A primeira parte é a rota da Gruta; a segunda, a da Ponte. Aqui o <span class="mono">*</span> é sempre o símbolo de Σ (coletar a estrela), nunca o fecho de Kleene. Os <span class="mono">aⁿ</span> são as chaves colhidas antes da estrela; os <span class="mono">bⁿ</span> do fim, as mesmas chaves depositadas na urna.</p>
+        <p>Gramática livre de contexto equivalente: <span class="mono">S → aSb | *T</span>, <span class="mono">T → sabc | Psc</span>, <span class="mono">P → aPb | ab</span>.</p>
+        <p><strong>Por que é preciso uma pilha.</strong> As chaves colhidas antes da estrela ficam por baixo dela e têm de ser devolvidas na urna em quantidade igual, para qualquer n. Um autômato finito tem memória limitada e não consegue contar n sem limite: pelo lema do bombeamento, bombear os <span class="mono">a</span> do início de <span class="mono">aᵖ * s a b c bᵖ</span> deixa mais chaves colhidas do que devolvidas, então L(M) não é regular. A pilha ainda impõe a ordem (LIFO): uma chave colhida depois da estrela a encobre, e a passagem <span class="mono">s</span> e o portal <span class="mono">c</span> só voltam a abrir quando essa chave é gasta.</p>
       </div>
     </section>
 
@@ -346,16 +357,16 @@
   <footer class="rodape">
     <p><strong>Victor Casagrande</strong> · Ciência da Computação · IFC Campus Videira</p>
     <p>Linguagens Formais e Autômatos · Prof. Wanderson Rigo · Trabalho 02 · 2026</p>
-    <p>HTML, CSS e JavaScript puros, sem dependências.</p>
+    <p>HTML, CSS e JavaScript puros, sem dependências. <a href="https://github.com/Victor-Casagrande/Estrela-do-Farol-PDA">Código-fonte, README e pda.jff no GitHub</a></p>
   </footer>
 
 </div>
 
-<script src="js/automato.js?v=20261125-3"></script>
-<script src="js/pda.js?v=20261125-3"></script>
-<script src="js/mapa.js?v=20261125-3"></script>
-<script src="js/game.js?v=20261125-3"></script>
-<script src="js/ui.js?v=20261125-3"></script>
-<script src="js/main.js?v=20261125-3"></script>
+<script src="js/automato.js?v=20261126-1"></script>
+<script src="js/pda.js?v=20261126-1"></script>
+<script src="js/mapa.js?v=20261126-1"></script>
+<script src="js/game.js?v=20261126-1"></script>
+<script src="js/ui.js?v=20261126-1"></script>
+<script src="js/main.js?v=20261126-1"></script>
 </body>
 </html>
